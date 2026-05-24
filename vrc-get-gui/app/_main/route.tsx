@@ -73,7 +73,7 @@ function MainLayout() {
 				className={`grow-0 ${isVisible ? "slide-right" : "invisible"}`}
 			/>
 			<div
-				className={`h-screen grow overflow-hidden flex p-4 compact:p-2 ${animationState}`}
+				className={`h-[calc(100vh-0.75rem)] grow overflow-hidden flex m-3 ml-0 p-6 rounded-[1.75rem] bg-[var(--md-sys-color-surface)] compact:m-2 compact:ml-0 compact:p-3 ${animationState}`}
 				onAnimationEnd={() => setAnimationState("")}
 			>
 				<Outlet />

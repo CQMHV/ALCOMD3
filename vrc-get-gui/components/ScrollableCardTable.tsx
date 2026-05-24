@@ -16,7 +16,7 @@ export const ScrollableCardTable = ({
 			<ScrollArea
 				type="auto"
 				className="h-full w-full vrc-get-scrollable-card"
-				scrollBarClassName="bg-background py-2.5 vrc-get-scrollable-card-vertical-bar"
+				scrollBarClassName="bg-transparent py-2.5 vrc-get-scrollable-card-vertical-bar"
 				{...props}
 			>
 				<table className="relative table-auto text-left w-full">
@@ -25,7 +25,7 @@ export const ScrollableCardTable = ({
 				<div className={"pb-2.5"} />
 				<ScrollBar
 					orientation="horizontal"
-					className="bg-background ps-2.5 vrc-get-scrollable-card-horizontal-bar"
+					className="bg-transparent ps-2.5 vrc-get-scrollable-card-horizontal-bar"
 				/>
 			</ScrollArea>
 		</Card>

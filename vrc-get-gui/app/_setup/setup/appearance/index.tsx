@@ -5,7 +5,6 @@ import {
 	GuiAnimationSwitch,
 	GuiCompactSwitch,
 	LanguageSelector,
-	ThemeSelector,
 } from "@/components/common-setting-parts";
 import { CardDescription } from "@/components/ui/card";
 import { tc } from "@/lib/i18n";
@@ -39,7 +38,6 @@ function Body() {
 				{tc("setup:appearance:description")}
 			</CardDescription>
 			<LanguageSelector />
-			<ThemeSelector />
 			<GuiAnimationSwitch />
 			<GuiCompactSwitch />
 		</>

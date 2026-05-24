@@ -298,7 +298,18 @@ function ProjectChangesDialog({
 
 	const incompatibility = changes.conflicts.length !== 0;
 
-	const needsCare = breakingChanges || incompatibility;
+	const hasPackageRemoval = groupedChanges.some(
+		([category]) =>
+			category === PackageChangeCategory.UninstallRequested ||
+			category === PackageChangeCategory.UninstallUnused ||
+			category === PackageChangeCategory.UninstallLegacy,
+	);
+	const hasLegacyRemoval =
+		changes.remove_legacy_files.length > 0 ||
+		changes.remove_legacy_folders.length > 0;
+	const hasUnlockedConflictRemoval = unlockedConflicts.length > 0;
+	const isDestructiveChange =
+		hasPackageRemoval || hasLegacyRemoval || hasUnlockedConflictRemoval;
 
 	return (
 		<div className={"contents whitespace-normal"}>
@@ -436,8 +447,8 @@ function ProjectChangesDialog({
 				</Button>
 				<DelayedButton
 					onClick={() => dialog.close(true)}
-					variant={needsCare ? "destructive" : "warning"}
-					delay={needsCare ? 1000 : 0}
+					variant={isDestructiveChange ? "destructive" : "emphasis"}
+					delay={isDestructiveChange ? 1000 : 0}
 				>
 					{tc("projects:manage:button:apply")}
 				</DelayedButton>

@@ -256,6 +256,7 @@ function ProjectViewHeader({
 						<Button
 							className={"rounded-r-none pl-4 pr-3 compact:h-10"}
 							onClick={startCreateProject}
+							variant="emphasis"
 						>
 							{tc("projects:create new project")}
 						</Button>
@@ -263,7 +264,7 @@ function ProjectViewHeader({
 							asChild
 							className={"rounded-l-none pl-2 pr-2 compact:h-10"}
 						>
-							<Button>
+							<Button variant="emphasis">
 								<ChevronDown className={"w-4 h-4"} />
 							</Button>
 						</DropdownMenuTrigger>

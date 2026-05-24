@@ -184,7 +184,7 @@ export function ProjectGridItem({
 				</div>
 
 				<div className="mt-2 flex flex-wrap gap-2 justify-end compact:gap-1">
-					<ButtonDisabledIfInvalid asChild>
+					<ButtonDisabledIfInvalid asChild variant="emphasis">
 						<OpenUnityButton
 							projectPath={project.path}
 							unityVersion={project.unity}
@@ -198,7 +198,6 @@ export function ProjectGridItem({
 								projectPath: project.path,
 							})
 						}
-						variant="success"
 					>
 						{tc("projects:backup")}
 					</ButtonDisabledIfInvalid>

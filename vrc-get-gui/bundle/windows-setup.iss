@@ -19,7 +19,8 @@
 #endif
 
 #define MyAppName "ALCOM"
-#define MyAppPublisher "anatawa12"
+#define MyAppPublisher "CQMHV"
+#define MyAppVersionInfoVersion "1.1.5.1"
 #define MyAppURL "https://vrc-get.anatawa12.com/alcom/"
 #define MyAppExeName "ALCOM.exe"
 #define MyAppAssocName "ALCOM Template"
@@ -53,6 +54,11 @@ PrivilegesRequiredOverridesAllowed=dialog
 OutputBaseFilename=alcom
 SolidCompression=yes
 WizardStyle=modern dynamic
+VersionInfoCompany={#MyAppPublisher}
+VersionInfoDescription={#MyAppName} Setup
+VersionInfoProductName={#MyAppName}
+VersionInfoProductVersion={#ApplicationVersion}
+VersionInfoVersion={#MyAppVersionInfoVersion}
 ; allow users to install ALCOM to different location than before.
 ; this would cause ALCOM to be installed to multiple location, but user may move ALCOM
 ; without uninstalling ALCOM so this is 'safer' option than normal one.

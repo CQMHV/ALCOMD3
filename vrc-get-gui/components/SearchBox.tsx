@@ -27,7 +27,7 @@ export const SearchBox = function SearchBox({
 				type="search"
 				placeholder={t("search:placeholder")}
 				className={`
-					w-full placeholder:text-primary focus:border-primary pl-9 placeholder:opacity-100
+					w-full placeholder:text-muted-foreground focus:border-primary pl-10 placeholder:opacity-100
 					h-full compact:h-full
 				`}
 				value={value}
@@ -35,7 +35,7 @@ export const SearchBox = function SearchBox({
 				ref={ref}
 			/>
 			<Search
-				className={`absolute! left-4 top-[calc(50%-7px)]`}
+				className={`absolute! left-4 top-[calc(50%-7px)] text-muted-foreground`}
 				width={13}
 				height={14}
 			/>

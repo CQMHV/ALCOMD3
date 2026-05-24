@@ -75,6 +75,7 @@ export function OpenUnityButton({
 		<PreventDoubleClick
 			delayMs={1000}
 			onClick={openUnityWithUpdateList}
+			variant="emphasis"
 			{...props}
 		>
 			{tc("projects:button:open unity")}

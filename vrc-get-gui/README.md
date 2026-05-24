@@ -85,13 +85,13 @@ Therefore, It's recommended to update rust toolchain before building the project
 
 ## Building
 
-To build the project, run the following command:
+To build the project, use the repository `xtask` command:
 
 ```bash
 cargo xtask build-alcom --release
 ```
 
-This command builds the main ALCOM executable for the current platform.
+This command builds the web frontend and the main ALCOM executable for the current platform.
 For cross-compilation, add the `--target` command-line parameter.
 The executable will be created in the `target/release` directory.
 
@@ -101,13 +101,30 @@ Note that this does not disable update checks.
 ALCOM will show a message when a newer release is available instead of offering a self-update.
 
 Directly distributing the executable may be suitable for some environments, but we also provide bundled distributions.
-To bundle ALCOM, run the following command after building it.
+Always build the executable with `cargo xtask build-alcom` before creating a production bundle.
 
 ```bash
 cargo xtask bundle-alcom --release --bundles <bundles>
 ```
 
 Check `--help` for the list of supported bundle types.
+
+For example, to build the Windows x64 installer:
+
+```bash
+cargo xtask build-alcom --release --target x86_64-pc-windows-msvc
+cargo xtask bundle-alcom --release --target x86_64-pc-windows-msvc --bundles setup-exe,setup-exe-zip
+```
+
+The installer artifacts will be created at:
+
+```text
+target/x86_64-pc-windows-msvc/release/bundle/setup/alcom-setup.exe
+target/x86_64-pc-windows-msvc/release/bundle/setup/alcom-setup.exe.zip
+```
+
+Do not use a plain `cargo build -p vrc-get-gui` binary for bundling a production installer.
+It may miss the production frontend setup and required feature flags.
 
 ## Development
 

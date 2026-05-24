@@ -189,7 +189,7 @@ export function ProjectRow({
 				</td>
 				<td className={noGrowCellClass}>
 					<div className="flex flex-row gap-2 max-w-min items-center">
-						<ButtonDisabledIfInvalid asChild>
+						<ButtonDisabledIfInvalid asChild variant="emphasis">
 							<OpenUnityButton
 								projectPath={project.path}
 								unityVersion={project.unity}
@@ -208,7 +208,6 @@ export function ProjectRow({
 									toastThrownError(e);
 								}
 							}}
-							variant={"success"}
 						>
 							{tc("projects:backup")}
 						</ButtonDisabledIfInvalid>
@@ -263,7 +262,7 @@ export function ManageOrMigrateButton({ project }: { project: TauriProject }) {
 		return (
 			<Tooltip>
 				<TooltipTriggerIfValid asChild>
-					<ButtonDisabledIfInvalid variant="success" disabled>
+					<ButtonDisabledIfInvalid disabled>
 						{tc("projects:button:manage")}
 					</ButtonDisabledIfInvalid>
 				</TooltipTriggerIfValid>
@@ -304,7 +303,7 @@ export function ManageOrMigrateButton({ project }: { project: TauriProject }) {
 			return (
 				<Tooltip>
 					<TooltipTriggerIfValid asChild>
-						<ButtonDisabledIfInvalid variant="info" disabled>
+						<ButtonDisabledIfInvalid disabled>
 							{tc("projects:button:manage")}
 						</ButtonDisabledIfInvalid>
 					</TooltipTriggerIfValid>
@@ -325,7 +324,6 @@ export function ManageOrMigrateButton({ project }: { project: TauriProject }) {
 							search: { projectPath: project.path },
 						})
 					}
-					variant="info"
 				>
 					{tc("projects:button:manage")}
 				</ButtonDisabledIfInvalid>

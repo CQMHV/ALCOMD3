@@ -747,7 +747,7 @@ function ProjectButton({
 					asChild
 					className={"rounded-l-none pl-2 pr-2 compact:h-10"}
 				>
-					<Button>
+					<Button variant="emphasis">
 						<ChevronDown className={"w-4 h-4"} />
 					</Button>
 				</DropdownMenuTrigger>

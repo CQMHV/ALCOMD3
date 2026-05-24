@@ -39,7 +39,6 @@ function load(): GlobalInfo {
 
 function onload(info: Readonly<GlobalInfo>) {
 	document.documentElement.setAttribute("lang", info.language);
-	document.documentElement.setAttribute("class", info.theme);
 }
 
 export default globalInfo;

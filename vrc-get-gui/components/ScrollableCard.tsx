@@ -15,11 +15,11 @@ export function ScrollableCard({
 			<ScrollArea
 				type="always"
 				className={"w-full shrink overflow-hidden vrc-get-scrollable-card"}
-				scrollBarClassName={"bg-background pb-2.5"}
+				scrollBarClassName={"bg-transparent pb-2.5"}
 			>
 				{children}
 				<div className={"pb-2.5"} />
-				<ScrollBar className={"bg-background"} orientation="horizontal" />
+				<ScrollBar className={"bg-transparent"} orientation="horizontal" />
 			</ScrollArea>
 		</Card>
 	);

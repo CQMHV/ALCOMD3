@@ -19,7 +19,6 @@ import {
 	GuiCompactSwitch,
 	LanguageSelector,
 	ProjectPathWarnings,
-	ThemeSelector,
 } from "@/components/common-setting-parts";
 import { HNavBar, HNavBarText, VStack } from "@/components/layout";
 import { ScrollableCardTable } from "@/components/ScrollableCardTable";
@@ -705,7 +704,6 @@ function AppearanceCard() {
 		<SettingsCard className={"flex flex-col gap-2"}>
 			<h2>{tc("settings:appearance")}</h2>
 			<LanguageSelector />
-			<ThemeSelector />
 			<GuiAnimationSwitch />
 			<GuiCompactSwitch />
 		</SettingsCard>

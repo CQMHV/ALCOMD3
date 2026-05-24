@@ -76,59 +76,6 @@ export function LanguageSelector() {
 	);
 }
 
-const environmentTheme = queryOptions({
-	queryKey: ["environmentTheme"],
-	queryFn: commands.environmentTheme,
-});
-
-export function ThemeSelector() {
-	const queryClient = useQueryClient();
-	const themeQuery = useQuery(environmentTheme);
-	const changeTheme = useMutation({
-		mutationFn: async (theme: string) =>
-			await commands.environmentSetTheme(theme),
-		onMutate: async (theme) => {
-			document.documentElement.setAttribute("class", theme);
-			await queryClient.invalidateQueries(environmentTheme);
-			const data = queryClient.getQueryData(environmentTheme.queryKey);
-			queryClient.setQueryData(environmentTheme.queryKey, theme);
-			return data;
-		},
-		onError: (e, _, ctx) => {
-			console.error(e);
-			toastThrownError(e);
-			queryClient.setQueryData(environmentTheme.queryKey, ctx);
-			if (ctx) document.documentElement.setAttribute("class", ctx);
-		},
-		onSettled: () => queryClient.invalidateQueries(environmentTheme),
-	});
-
-	return (
-		<label className={"flex items-center"}>
-			<span className={"text-lg"}>
-				{tc("settings:theme")}
-				{": "}
-			</span>
-			<Select value={themeQuery.data} onValueChange={changeTheme.mutate}>
-				<SelectTrigger>
-					<SelectValue />
-				</SelectTrigger>
-				<SelectContent>
-					<SelectGroup>
-						<SelectItem value={"system"}>
-							{tc("settings:theme:system")}
-						</SelectItem>
-						<SelectItem value={"light"}>
-							{tc("settings:theme:light")}
-						</SelectItem>
-						<SelectItem value={"dark"}>{tc("settings:theme:dark")}</SelectItem>
-					</SelectGroup>
-				</SelectContent>
-			</Select>
-		</label>
-	);
-}
-
 const environmentGuiAnimation = queryOptions({
 	queryKey: ["environmentGuiAnimation"],
 	queryFn: commands.environmentGuiAnimation,

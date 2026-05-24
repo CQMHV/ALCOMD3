@@ -35,7 +35,7 @@ export function HNavBar({
 }) {
 	return (
 		<Card
-			className={`${className} shrink-0 mx-auto px-2 py-2 w-full compact:p-1`}
+			className={`${className} shrink-0 mx-auto px-2 py-2 w-full bg-[var(--md-sys-color-surface)] compact:p-1`}
 		>
 			<div className="mx-auto flex flex-wrap items-center justify-between text-primary gap-2 w-full">
 				<div
@@ -64,7 +64,9 @@ export function HNavBar({
 export function HNavBarText({ children }: { children?: React.ReactNode }) {
 	return (
 		<div className="-me-2 h-10 px-3 flex items-center grow-0">
-			<p className="cursor-pointer font-bold">{children}</p>
+			<p className="cursor-pointer text-primary text-2xl font-normal">
+				{children}
+			</p>
 		</div>
 	);
 }

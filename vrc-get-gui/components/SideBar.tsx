@@ -9,7 +9,6 @@ import {
 import {
 	AlignLeft,
 	CircleAlert,
-	Info,
 	List,
 	Package,
 	Settings,
@@ -19,8 +18,8 @@ import type React from "react";
 import {
 	GuiAnimationSwitch,
 	GuiCompactSwitch,
-	ThemeSelector,
 } from "@/components/common-setting-parts";
+import { MaterialThemeButton } from "@/components/MaterialThemePanel";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
@@ -42,14 +41,10 @@ import {
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { commands } from "@/lib/bindings";
-import { useGlobalInfo } from "@/lib/global-info";
 import { tc } from "@/lib/i18n";
-import { toastNormal } from "@/lib/toast";
 
 export function SideBar({ className }: { className?: string }) {
 	"use client";
-
-	const globalInfo = useGlobalInfo();
 
 	const isBadHostName = useQuery({
 		queryKey: ["util_is_bad_hostname"],
@@ -61,19 +56,13 @@ export function SideBar({ className }: { className?: string }) {
 		initialData: false,
 	});
 
-	const copyVersionName = () => {
-		if (globalInfo.version != null) {
-			void navigator.clipboard.writeText(globalInfo.version);
-			toastNormal(tc("sidebar:toast:version copied"));
-		}
-	};
 	const isDev = import.meta.env.DEV;
 
 	return (
 		<Card
-			className={`${className} flex w-auto max-w-80 p-2 shadow-xl shadow-primary/5 ml-4 my-4 shrink-0 overflow-auto compact:p-0 compact:ml-2 compact:my-2`}
+			className={`${className} flex w-[300px] max-w-[300px] p-3 ml-0 my-3 shrink-0 overflow-auto bg-background text-[var(--md-sys-color-on-surface)] compact:w-auto compact:p-1 compact:my-2`}
 		>
-			<div className="flex flex-col gap-1 p-2 min-w-40 grow compact:min-w-0">
+			<div className="flex flex-col gap-1 min-w-40 grow compact:min-w-0">
 				<SideBarItem href={"/projects"} text={tc("projects")} icon={List} />
 				<SideBarItem
 					href={"/packages/repositories"}
@@ -93,14 +82,7 @@ export function SideBar({ className }: { className?: string }) {
 				{isDev && <StyleQuickAccess />}
 				<div className={"grow"} />
 				{isBadHostName.data && <BadHostNameDialogButton />}
-				<SideBarButton
-					icon={Info}
-					showIconOnlyWhenCompact
-					className="hover:bg-card"
-					onClick={copyVersionName}
-				>
-					{globalInfo.version ? `v${globalInfo.version}` : "unknown"}
-				</SideBarButton>
+				<MaterialThemeButton className="w-full hover:bg-card compact:size-10" />
 			</div>
 		</Card>
 	);
@@ -126,7 +108,9 @@ function SideBarItem({
 		<SideBarButton
 			icon={icon}
 			className={
-				isActive ? "bg-secondary border border-primary" : "bg-transparent"
+				isActive
+					? "bg-[var(--md-sys-color-surface-container-highest)] text-[var(--md-sys-color-on-surface)]"
+					: "bg-transparent text-[var(--md-sys-color-on-surface)]"
 			}
 			onClick={() => navigate({ to: href })}
 		>
@@ -196,7 +180,7 @@ function SideBarButton({
 			<TooltipTrigger asChild>
 				<Button
 					variant="ghost"
-					className={`justify-start ${className} compact:justify-center compact:px-3 compact:size-10`}
+					className={`justify-start h-12 px-4 rounded-full text-[var(--md-sys-color-on-surface)] hover:bg-[var(--md-sys-color-surface-container-highest)] hover:text-[var(--md-sys-color-on-surface)] ${className} compact:justify-center compact:px-3 compact:size-10`}
 					{...props}
 				>
 					<div
@@ -221,7 +205,6 @@ export function StyleQuickAccess() {
 				</SideBarButton>
 			</PopoverTrigger>
 			<PopoverContent>
-				<ThemeSelector />
 				<GuiAnimationSwitch />
 				<GuiCompactSwitch />
 			</PopoverContent>
