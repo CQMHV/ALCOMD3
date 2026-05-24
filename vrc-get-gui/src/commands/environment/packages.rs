@@ -371,6 +371,28 @@ pub async fn environment_remove_repository(
     Ok(())
 }
 
+#[tauri::command]
+#[specta::specta]
+pub async fn environment_reorder_repositories(
+    settings: State<'_, SettingsState>,
+    packages: State<'_, PackagesState>,
+    io: State<'_, DefaultEnvironmentIo>,
+    ids: Vec<String>,
+) -> Result<(), RustError> {
+    let mut settings = settings.load_mut(io.inner()).await?;
+
+    if !settings.reorder_user_repos(&ids) {
+        return Err(RustError::unrecoverable_str(
+            "repository order does not match current user repositories",
+        ));
+    }
+
+    settings.save().await?;
+    packages.clear_cache();
+
+    Ok(())
+}
+
 #[derive(Serialize, specta::Type)]
 #[serde(tag = "type")]
 pub enum TauriImportRepositoryPickResult {

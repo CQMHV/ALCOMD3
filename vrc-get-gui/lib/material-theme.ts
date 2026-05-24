@@ -25,19 +25,24 @@ export const USER_THEME_SCHEME_KEY = "user_theme_scheme";
 export const USER_THEME_STYLE_ID = "user-theme-style";
 
 export const THEME_SCHEME_LABELS = {
-	"tonal-spot": "调性点缀",
-	fidelity: "高保真",
-	monochrome: "单色",
-	neutral: "中性",
-	vibrant: "活力",
-	expressive: "表现力",
-	content: "内容主题",
-	rainbow: "彩虹",
-	"fruit-salad": "果缤纷",
+	"tonal-spot": "settings:theme:scheme:tonal-spot",
+	fidelity: "settings:theme:scheme:fidelity",
+	monochrome: "settings:theme:scheme:monochrome",
+	neutral: "settings:theme:scheme:neutral",
+	vibrant: "settings:theme:scheme:vibrant",
+	expressive: "settings:theme:scheme:expressive",
+	content: "settings:theme:scheme:content",
+	rainbow: "settings:theme:scheme:rainbow",
+	"fruit-salad": "settings:theme:scheme:fruit-salad",
 } as const;
 
 export type ThemeSchemeName = keyof typeof THEME_SCHEME_LABELS;
 export type ThemeMode = "auto" | "light" | "dark";
+export type MaterialThemeSettings = {
+	sourceHex: string;
+	mode: ThemeMode;
+	scheme: ThemeSchemeName;
+};
 
 export const THEME_SCHEME_NAMES = Object.keys(
 	THEME_SCHEME_LABELS,
@@ -116,6 +121,40 @@ export function normalizeThemeScheme(value: unknown): ThemeSchemeName {
 		THEME_SCHEME_NAMES.includes(value as ThemeSchemeName)
 		? (value as ThemeSchemeName)
 		: DEFAULT_THEME_SCHEME;
+}
+
+export function getStoredMaterialTheme(): MaterialThemeSettings {
+	if (typeof window === "undefined") {
+		return {
+			sourceHex: DEFAULT_THEME_SOURCE_HEX,
+			mode: DEFAULT_THEME_MODE,
+			scheme: DEFAULT_THEME_SCHEME,
+		};
+	}
+
+	return {
+		sourceHex:
+			normalizeHexColor(localStorage.getItem(USER_THEME_SOURCE_KEY)) ??
+			DEFAULT_THEME_SOURCE_HEX,
+		mode: normalizeThemeMode(localStorage.getItem(USER_THEME_MODE_KEY)),
+		scheme: normalizeThemeScheme(localStorage.getItem(USER_THEME_SCHEME_KEY)),
+	};
+}
+
+export function saveMaterialTheme({
+	sourceHex,
+	mode,
+	scheme,
+}: MaterialThemeSettings) {
+	localStorage.setItem(USER_THEME_SOURCE_KEY, sourceHex);
+	localStorage.setItem(USER_THEME_MODE_KEY, mode);
+	localStorage.setItem(USER_THEME_SCHEME_KEY, scheme);
+}
+
+export function applyStoredMaterialTheme() {
+	const settings = getStoredMaterialTheme();
+	applyMaterialTheme(settings.sourceHex, settings.mode, settings.scheme);
+	return settings;
 }
 
 export function hctFromHex(sourceHex: string) {

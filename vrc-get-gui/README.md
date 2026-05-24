@@ -1,4 +1,4 @@
-# ALCOM
+# ALCOMD3
 
 [![Github Release][shields-github-version]][release-alcom]
 [![Homebrew Version][shields-homebrew-version]][homebrew-alcom]
@@ -25,9 +25,13 @@
 
 [scoop-xrtools]: https://github.com/babo4d/scoop-xrtools/
 
-A crossplatform fast open-source alternative of VRChat Creator Companion
+ALCOMD3 is a downstream fork of [ALCOM](https://vrc-get.anatawa12.com/alcom/) with a Google Material Design 3 inspired interface.
+It is intended as the ALCOM-MD3 style variant while keeping the upstream ALCOM/vrc-get functionality.
 
-[Homepage](https://vrc-get.anatawa12.com/alcom/)
+Upstream ALCOM homepage: [https://vrc-get.anatawa12.com/alcom/](https://vrc-get.anatawa12.com/alcom/)
+
+Automatic update checks are currently disabled in ALCOMD3.
+They will remain disabled until an ALCOMD3-specific update source is configured, so this fork will not update itself from the upstream ALCOM update feed.
 
 ## Installation
 
@@ -128,7 +132,7 @@ It may miss the production frontend setup and required feature flags.
 
 ## Development
 
-ALCOM is currently based on tauri and next.js.
+ALCOMD3 is currently based on Tauri and React/Vite.
 
 Run `npm run tauri dev` to start the development server and gui.
 

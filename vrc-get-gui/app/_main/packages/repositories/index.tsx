@@ -7,7 +7,7 @@ import {
 	useQueryClient,
 } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { ChevronDown, CircleX } from "lucide-react";
+import { ArrowDown, ArrowUp, ChevronDown, CircleX, Package } from "lucide-react";
 import { Suspense, useCallback, useEffect, useId, useMemo } from "react";
 import { HNavBar, VStack } from "@/components/layout";
 import { ScrollableCardTable } from "@/components/ScrollableCardTable";
@@ -25,7 +25,11 @@ import {
 	TooltipContent,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
-import type { TauriUserRepository } from "@/lib/bindings";
+import type {
+	TauriBasePackageInfo,
+	TauriPackage,
+	TauriUserRepository,
+} from "@/lib/bindings";
 import { commands } from "@/lib/bindings";
 import { type DialogContext, openSingleDialog } from "@/lib/dialog";
 import { tc, tt } from "@/lib/i18n";
@@ -34,6 +38,7 @@ import { toastThrownError } from "@/lib/toast";
 import { useTauriListen } from "@/lib/use-tauri-listen";
 import { cn } from "@/lib/utils";
 import { HeadingPageName } from "../-tab-selector";
+import { RepositoryPackageList } from "./-repository-package-list";
 import { addRepository, openAddRepositoryDialog } from "./-use-add-repository";
 import { importRepositories } from "./-use-import-repositories";
 
@@ -54,8 +59,14 @@ const environmentRepositoriesInfo = queryOptions({
 	queryFn: commands.environmentRepositoriesInfo,
 });
 
+const environmentPackages = queryOptions({
+	queryKey: ["environmentPackages"],
+	queryFn: commands.environmentPackages,
+});
+
 function PageBody() {
 	const result = useQuery(environmentRepositoriesInfo);
+	const packagesResult = useQuery(environmentPackages);
 
 	const exportRepositories = useMutation({
 		mutationFn: async () => await commands.environmentExportRepositories(),
@@ -83,6 +94,23 @@ function PageBody() {
 		() => new Set(result.data?.hidden_user_repositories),
 		[result.data?.hidden_user_repositories],
 	);
+	const packagesByRepo = useMemo(() => {
+		const map = new Map<string, TauriPackage[]>();
+
+		for (const pkg of packagesResult.data ?? []) {
+			if (pkg.source === "LocalUser") continue;
+
+			const repoId = pkg.source.Remote.id;
+			const packages = map.get(repoId);
+			if (packages) {
+				packages.push(pkg);
+			} else {
+				map.set(repoId, [pkg]);
+			}
+		}
+
+		return map;
+	}, [packagesResult.data]);
 
 	useTauriListen<null>("deep-link-add-repository", (_) => {
 		void processDeepLink();
@@ -142,6 +170,7 @@ function PageBody() {
 					<RepositoryTableBody
 						userRepos={result.data?.user_repositories || []}
 						hiddenUserRepos={hiddenUserRepos}
+						packagesByRepo={packagesByRepo}
 					/>
 				</ScrollableCardTable>
 			</main>
@@ -152,9 +181,11 @@ function PageBody() {
 function RepositoryTableBody({
 	userRepos,
 	hiddenUserRepos,
+	packagesByRepo,
 }: {
 	userRepos: TauriUserRepository[];
 	hiddenUserRepos: Set<string>;
+	packagesByRepo: Map<string, TauriPackage[]>;
 }) {
 	const TABLE_HEAD = [
 		"", // checkbox
@@ -162,6 +193,53 @@ function RepositoryTableBody({
 		"vpm repositories:url",
 		"", // actions
 	];
+	const queryClient = useQueryClient();
+	const reorderRepositories = useMutation({
+		mutationFn: async (ids: string[]) =>
+			await commands.environmentReorderRepositories(ids),
+		onMutate: async (ids) => {
+			await queryClient.cancelQueries(environmentRepositoriesInfo);
+			const data = queryClient.getQueryData(
+				environmentRepositoriesInfo.queryKey,
+			);
+
+			if (data !== undefined) {
+				const repositoriesById = new Map(
+					data.user_repositories.map((repo) => [repo.id, repo]),
+				);
+				queryClient.setQueryData(environmentRepositoriesInfo.queryKey, {
+					...data,
+					user_repositories: ids
+						.map((id) => repositoriesById.get(id))
+						.filter((repo): repo is TauriUserRepository => repo != null),
+				});
+			}
+
+			return data;
+		},
+		onError: (e, _, ctx) => {
+			reportError(e);
+			console.error(e);
+			queryClient.setQueryData(environmentRepositoriesInfo.queryKey, ctx);
+		},
+		onSettled: async () => {
+			await Promise.all([
+				queryClient.invalidateQueries(environmentRepositoriesInfo),
+				queryClient.invalidateQueries({ queryKey: ["environmentPackages"] }),
+			]);
+		},
+	});
+
+	const moveUserRepo = (index: number, direction: -1 | 1) => {
+		const nextIndex = index + direction;
+		if (nextIndex < 0 || nextIndex >= userRepos.length) return;
+
+		const nextRepos = [...userRepos];
+		const current = nextRepos[index];
+		nextRepos[index] = nextRepos[nextIndex];
+		nextRepos[nextIndex] = current;
+		reorderRepositories.mutate(nextRepos.map((repo) => repo.id));
+	};
 
 	return (
 		<>
@@ -186,6 +264,7 @@ function RepositoryTableBody({
 					url={"https://packages.vrchat.com/official?download"}
 					displayName={tt("vpm repositories:source:official")}
 					hiddenUserRepos={hiddenUserRepos}
+					repoPackages={packagesByRepo.get("com.vrchat.repos.official") ?? []}
 					canRemove={false}
 				/>
 				<RepositoryRow
@@ -193,16 +272,27 @@ function RepositoryTableBody({
 					url={"https://packages.vrchat.com/curated?download"}
 					displayName={tt("vpm repositories:source:curated")}
 					hiddenUserRepos={hiddenUserRepos}
+					repoPackages={packagesByRepo.get("com.vrchat.repos.curated") ?? []}
 					className={"border-b border-primary/10"}
 					canRemove={false}
 				/>
-				{userRepos.map((repo) => (
+				{userRepos.map((repo, index) => (
 					<RepositoryRow
 						key={repo.id}
 						repoId={repo.id}
 						displayName={repo.display_name}
 						url={repo.url}
 						hiddenUserRepos={hiddenUserRepos}
+						repoPackages={packagesByRepo.get(repo.id) ?? []}
+						onMoveUp={
+							index > 0 ? () => moveUserRepo(index, -1) : undefined
+						}
+						onMoveDown={
+							index < userRepos.length - 1
+								? () => moveUserRepo(index, 1)
+								: undefined
+						}
+						reorderDisabled={reorderRepositories.isPending}
 					/>
 				))}
 			</tbody>
@@ -215,6 +305,10 @@ function RepositoryRow({
 	displayName,
 	url,
 	hiddenUserRepos,
+	repoPackages,
+	onMoveUp,
+	onMoveDown,
+	reorderDisabled = false,
 	className,
 	canRemove = true,
 }: {
@@ -222,6 +316,10 @@ function RepositoryRow({
 	displayName: TauriUserRepository["display_name"];
 	url: TauriUserRepository["url"];
 	hiddenUserRepos: Set<string>;
+	repoPackages: TauriPackage[];
+	onMoveUp?: () => void;
+	onMoveDown?: () => void;
+	reorderDisabled?: boolean;
 	className?: string;
 	canRemove?: boolean;
 }) {
@@ -295,32 +393,108 @@ function RepositoryRow({
 				<p className="font-normal">{url}</p>
 			</td>
 			<td className={`${cellClass} w-0`}>
-				<Tooltip>
-					<TooltipTrigger asChild={canRemove}>
-						<Button
-							disabled={!canRemove}
-							onClick={() => {
-								void openSingleDialog(RemoveRepositoryDialog, {
-									displayName,
-									id: repoId,
-								});
-							}}
-							variant={"ghost"}
-							size={"icon"}
-						>
-							<CircleX className={"size-5 text-destructive"} />
-						</Button>
-					</TooltipTrigger>
-					<TooltipContent>
-						{canRemove
-							? tc("vpm repositories:remove repository")
-							: tc(
-									"vpm repositories:tooltip:remove curated or official repository",
-								)}
-					</TooltipContent>
-				</Tooltip>
+				<div className="flex items-center gap-1">
+					<Tooltip>
+						<TooltipTrigger asChild>
+							<Button
+								onClick={() => {
+									void openSingleDialog(RepositoryPackagesDialog, {
+										displayName,
+										packages: repoPackages,
+									});
+								}}
+								variant={"ghost"}
+								size={"icon"}
+							>
+								<Package className={"size-5"} />
+							</Button>
+						</TooltipTrigger>
+						<TooltipContent>
+							{tc("vpm repositories:tooltip:view packages")}
+						</TooltipContent>
+					</Tooltip>
+					<Tooltip>
+						<TooltipTrigger asChild>
+							<Button
+								disabled={onMoveUp == null || reorderDisabled}
+								onClick={onMoveUp}
+								variant={"ghost"}
+								size={"icon"}
+							>
+								<ArrowUp className={"size-5"} />
+							</Button>
+						</TooltipTrigger>
+						<TooltipContent>
+							{tc("vpm repositories:tooltip:move up")}
+						</TooltipContent>
+					</Tooltip>
+					<Tooltip>
+						<TooltipTrigger asChild>
+							<Button
+								disabled={onMoveDown == null || reorderDisabled}
+								onClick={onMoveDown}
+								variant={"ghost"}
+								size={"icon"}
+							>
+								<ArrowDown className={"size-5"} />
+							</Button>
+						</TooltipTrigger>
+						<TooltipContent>
+							{tc("vpm repositories:tooltip:move down")}
+						</TooltipContent>
+					</Tooltip>
+					<Tooltip>
+						<TooltipTrigger asChild={canRemove}>
+							<Button
+								disabled={!canRemove}
+								onClick={() => {
+									void openSingleDialog(RemoveRepositoryDialog, {
+										displayName,
+										id: repoId,
+									});
+								}}
+								variant={"ghost"}
+								size={"icon"}
+							>
+								<CircleX className={"size-5 text-destructive"} />
+							</Button>
+						</TooltipTrigger>
+						<TooltipContent>
+							{canRemove
+								? tc("vpm repositories:remove repository")
+								: tc(
+										"vpm repositories:tooltip:remove curated or official repository",
+									)}
+						</TooltipContent>
+					</Tooltip>
+				</div>
 			</td>
 		</tr>
+	);
+}
+
+function RepositoryPackagesDialog({
+	dialog,
+	displayName,
+	packages,
+}: {
+	dialog: DialogContext<void>;
+	displayName: string;
+	packages: TauriBasePackageInfo[];
+}) {
+	return (
+		<>
+			<DialogTitle>{displayName}</DialogTitle>
+			<div className={"max-h-[50vh] overflow-y-auto font-normal"}>
+				<p className={"font-normal"}>{tc("vpm repositories:dialog:packages")}</p>
+				<RepositoryPackageList packages={packages} />
+			</div>
+			<DialogFooter>
+				<Button onClick={() => dialog.close()}>
+					{tc("general:button:close")}
+				</Button>
+			</DialogFooter>
+		</>
 	);
 }
 

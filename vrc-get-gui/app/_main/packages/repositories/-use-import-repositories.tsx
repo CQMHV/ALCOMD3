@@ -21,6 +21,7 @@ import { type DialogContext, showDialog } from "@/lib/dialog";
 import { tc, tt } from "@/lib/i18n";
 import { queryClient } from "@/lib/query-client";
 import { toastSuccess } from "@/lib/toast";
+import { RepositoryPackageList } from "./-repository-package-list";
 import { useEffectEvent } from "@/lib/use-effect-event";
 
 type ParsedRepositories = {
@@ -226,11 +227,7 @@ function ConfirmingPackages({
 							case "Success":
 								error = false;
 								content = (
-									<ul className={"list-disc pl-6"}>
-										{download.value.packages.map((info) => (
-											<li key={info.name}>{info.display_name ?? info.name}</li>
-										))}
-									</ul>
+									<RepositoryPackageList packages={download.value.packages} />
 								);
 								break;
 							default:

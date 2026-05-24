@@ -11,6 +11,8 @@ use tauri::{AppHandle, State, Window};
 use tauri_plugin_dialog::DialogExt;
 use url::Url;
 
+pub const ALCOM_DISPLAY_VERSION: &str = env!("CARGO_PKG_VERSION");
+
 #[derive(serde::Deserialize, specta::Type)]
 #[allow(clippy::enum_variant_names)]
 pub enum OpenOptions {
@@ -58,7 +60,7 @@ pub fn util_get_log_entries() -> Vec<LogEntry> {
 #[tauri::command]
 #[specta::specta]
 pub fn util_get_version() -> String {
-    env!("CARGO_PKG_VERSION").to_string()
+    ALCOM_DISPLAY_VERSION.to_string()
 }
 
 pub async fn check_for_update(
@@ -94,6 +96,10 @@ pub async fn util_check_for_update(
     updater_state: State<'_, UpdaterState>,
     config: State<'_, GuiConfigState>,
 ) -> Result<Option<CheckForUpdateResponse>, RustError> {
+    let _ = (app_handle, updater_state, config);
+    return Ok(None);
+
+    #[allow(unreachable_code)]
     let stable = config.get().release_channel == "stable";
     let Some(response) = check_for_update(app_handle, stable).await? else {
         return Ok(None);

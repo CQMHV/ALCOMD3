@@ -20,7 +20,7 @@
 
 #define MyAppName "ALCOM"
 #define MyAppPublisher "CQMHV"
-#define MyAppVersionInfoVersion "1.1.5.1"
+#define MyAppVersionInfoVersion "1.1.6.1"
 #define MyAppURL "https://vrc-get.anatawa12.com/alcom/"
 #define MyAppExeName "ALCOM.exe"
 #define MyAppAssocName "ALCOM Template"
@@ -67,6 +67,9 @@ DisableDirPage=no
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "japanese"; MessagesFile: "compiler:Languages\Japanese.isl"
+Name: "korean"; MessagesFile: "compiler:Languages\Korean.isl"
+Name: "chinesesimplified"; MessagesFile: "{#SourcePath}\ChineseSimplified.isl"
+Name: "chinesetraditional"; MessagesFile: "{#SourcePath}\ChineseTraditional.isl"
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked

@@ -17,11 +17,11 @@ import {
 	DEFAULT_THEME_MODE,
 	DEFAULT_THEME_SCHEME,
 	DEFAULT_THEME_SOURCE_HEX,
+	getStoredMaterialTheme,
 	hctFromHex,
 	hexFromHctInputs,
 	normalizeHexColor,
-	normalizeThemeMode,
-	normalizeThemeScheme,
+	saveMaterialTheme,
 	THEME_SCHEME_LABELS,
 	THEME_SCHEME_NAMES,
 	type ThemeMode,
@@ -30,6 +30,7 @@ import {
 	USER_THEME_SCHEME_KEY,
 	USER_THEME_SOURCE_KEY,
 } from "@/lib/material-theme";
+import { tc, tt } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 export function MaterialThemeButton({ className }: { className?: string }) {
@@ -46,7 +47,7 @@ export function MaterialThemeButton({ className }: { className?: string }) {
 					<div className="mr-4 compact:mr-0">
 						<Palette className="h-5 w-5" />
 					</div>
-					<span className="compact:hidden">主题</span>
+					<span className="compact:hidden">{tc("settings:theme")}</span>
 				</Button>
 			</PopoverTrigger>
 			<PopoverContent
@@ -70,35 +71,16 @@ export function MaterialThemeButton({ className }: { className?: string }) {
 }
 
 function MaterialThemePanel() {
-	const [sourceHex, setSourceHex] = useState(DEFAULT_THEME_SOURCE_HEX);
-	const [hexText, setHexText] = useState(DEFAULT_THEME_SOURCE_HEX);
-	const [mode, setMode] = useState<ThemeMode>(DEFAULT_THEME_MODE);
-	const [scheme, setScheme] = useState<ThemeSchemeName>(DEFAULT_THEME_SCHEME);
-	const [hct, setHct] = useState(() => hctFromHex(DEFAULT_THEME_SOURCE_HEX));
-
-	useEffect(() => {
-		const savedSourceHex = normalizeHexColor(
-			localStorage.getItem(USER_THEME_SOURCE_KEY),
-		);
-		const nextSourceHex = savedSourceHex ?? DEFAULT_THEME_SOURCE_HEX;
-		const nextMode = normalizeThemeMode(localStorage.getItem(USER_THEME_MODE_KEY));
-		const nextScheme = normalizeThemeScheme(
-			localStorage.getItem(USER_THEME_SCHEME_KEY),
-		);
-
-		setSourceHex(nextSourceHex);
-		setHexText(nextSourceHex);
-		setMode(nextMode);
-		setScheme(nextScheme);
-		setHct(hctFromHex(nextSourceHex));
-		applyMaterialTheme(nextSourceHex, nextMode, nextScheme);
-	}, []);
+	const initialTheme = useState(getStoredMaterialTheme)[0];
+	const [sourceHex, setSourceHex] = useState(initialTheme.sourceHex);
+	const [hexText, setHexText] = useState(initialTheme.sourceHex);
+	const [mode, setMode] = useState<ThemeMode>(initialTheme.mode);
+	const [scheme, setScheme] = useState<ThemeSchemeName>(initialTheme.scheme);
+	const [hct, setHct] = useState(() => hctFromHex(initialTheme.sourceHex));
 
 	useEffect(() => {
 		applyMaterialTheme(sourceHex, mode, scheme);
-		localStorage.setItem(USER_THEME_SOURCE_KEY, sourceHex);
-		localStorage.setItem(USER_THEME_MODE_KEY, mode);
-		localStorage.setItem(USER_THEME_SCHEME_KEY, scheme);
+		saveMaterialTheme({ sourceHex, mode, scheme });
 	}, [sourceHex, mode, scheme]);
 
 	useEffect(() => {
@@ -139,12 +121,12 @@ function MaterialThemePanel() {
 	return (
 		<div className="theme-panel__content">
 			<div className="theme-panel__title-row">
-				<h2 className="theme-panel__title">主题</h2>
+				<h2 className="theme-panel__title">{tc("settings:theme")}</h2>
 				<Button
 					variant="ghost"
 					size="icon"
 					onClick={resetTheme}
-					aria-label="重置主题"
+					aria-label={tt("settings:theme:reset")}
 				>
 					<RotateCcw className="size-4" />
 				</Button>
@@ -152,7 +134,7 @@ function MaterialThemePanel() {
 
 			<div className="theme-card">
 				<Label className="theme-card__label" htmlFor="theme-color-input">
-					源色
+					{tc("settings:theme:source color")}
 				</Label>
 				<div className="theme-card__color-row">
 					<input
@@ -180,7 +162,7 @@ function MaterialThemePanel() {
 
 			<div className="theme-sliders">
 				<ThemeSlider
-					label="色相"
+					label={tc("settings:theme:hue")}
 					value={hct.hue}
 					min={0}
 					max={360}
@@ -188,7 +170,7 @@ function MaterialThemePanel() {
 					onChange={(value) => updateHct("hue", value)}
 				/>
 				<ThemeSlider
-					label="色度"
+					label={tc("settings:theme:chroma")}
 					value={hct.chroma}
 					min={0}
 					max={150}
@@ -196,7 +178,7 @@ function MaterialThemePanel() {
 					onChange={(value) => updateHct("chroma", value)}
 				/>
 				<ThemeSlider
-					label="明度"
+					label={tc("settings:theme:tone")}
 					value={hct.tone}
 					min={0}
 					max={100}
@@ -207,18 +189,20 @@ function MaterialThemePanel() {
 
 			<div className="theme-mode-toggle">
 				<ThemeModeButton mode={mode} value="auto" onChange={setMode}>
-					自动
+					{tc("settings:theme:system")}
 				</ThemeModeButton>
 				<ThemeModeButton mode={mode} value="light" onChange={setMode}>
-					浅色
+					{tc("settings:theme:light")}
 				</ThemeModeButton>
 				<ThemeModeButton mode={mode} value="dark" onChange={setMode}>
-					深色
+					{tc("settings:theme:dark")}
 				</ThemeModeButton>
 			</div>
 
 			<div className="theme-schemes">
-				<p className="theme-schemes__title">配色方案</p>
+				<p className="theme-schemes__title">
+					{tc("settings:theme:scheme")}
+				</p>
 				<div className="theme-schemes-list">
 					{THEME_SCHEME_NAMES.map((schemeName) => (
 						<label className="theme-scheme-option" key={schemeName}>
@@ -229,7 +213,7 @@ function MaterialThemePanel() {
 								checked={scheme === schemeName}
 								onChange={() => setScheme(schemeName)}
 							/>
-							{THEME_SCHEME_LABELS[schemeName]}
+							{tc(THEME_SCHEME_LABELS[schemeName])}
 						</label>
 					))}
 				</div>
@@ -268,7 +252,7 @@ function ThemeSlider({
 	trackClassName,
 	onChange,
 }: {
-	label: string;
+	label: React.ReactNode;
 	value: number;
 	min: number;
 	max: number;

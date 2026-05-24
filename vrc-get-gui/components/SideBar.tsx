@@ -8,6 +8,7 @@ import {
 } from "@tanstack/react-router";
 import {
 	AlignLeft,
+	BadgeInfo,
 	CircleAlert,
 	List,
 	Package,
@@ -42,6 +43,8 @@ import {
 } from "@/components/ui/tooltip";
 import { commands } from "@/lib/bindings";
 import { tc } from "@/lib/i18n";
+import { toastSuccess } from "@/lib/toast";
+import vrcalIconUrl from "../icons/vrcal-favicon.svg";
 
 export function SideBar({ className }: { className?: string }) {
 	"use client";
@@ -70,6 +73,7 @@ export function SideBar({ className }: { className?: string }) {
 					icon={Package}
 				/>
 				<SideBarItem href={"/settings"} text={tc("settings")} icon={Settings} />
+				<MaterialThemeButton className="w-full compact:size-10" />
 				<SideBarItem href={"/log"} text={tc("logs")} icon={AlignLeft} />
 				{isDev && <DevRestartSetupButton />}
 				{isDev && (
@@ -81,8 +85,12 @@ export function SideBar({ className }: { className?: string }) {
 				)}
 				{isDev && <StyleQuickAccess />}
 				<div className={"grow"} />
+				<SideBarExternalLinkButton
+					href="https://vrcal.cqmhv.com"
+					text={tc("sidebar:vrchat avatar learn")}
+				/>
+				<VersionCopyButton />
 				{isBadHostName.data && <BadHostNameDialogButton />}
-				<MaterialThemeButton className="w-full hover:bg-card compact:size-10" />
 			</div>
 		</Card>
 	);
@@ -116,6 +124,55 @@ function SideBarItem({
 		>
 			{text}
 		</SideBarButton>
+	);
+}
+
+function SideBarExternalLinkButton({
+	href,
+	text,
+}: {
+	href: string;
+	text: React.ReactNode;
+}) {
+	return (
+		<SideBarButton
+			icon={VrcalIcon}
+			onClick={() => void commands.utilOpenUrl(href)}
+		>
+			{text}
+		</SideBarButton>
+	);
+}
+
+function VersionCopyButton() {
+	const version = useQuery({
+		queryKey: ["util_get_version"],
+		queryFn: commands.utilGetVersion,
+		refetchOnMount: false,
+		refetchOnReconnect: false,
+		refetchOnWindowFocus: false,
+		refetchInterval: false,
+	});
+	const copyText = version.data ? `v${version.data}` : "";
+	const onClick = async () => {
+		await navigator.clipboard.writeText(copyText);
+		toastSuccess(tc("sidebar:toast:version copied"));
+	};
+	return (
+		<SideBarButton icon={BadgeInfo} onClick={onClick} disabled={!copyText}>
+			{copyText ? tc("sidebar:version", { version: copyText }) : "..."}
+		</SideBarButton>
+	);
+}
+
+function VrcalIcon({ className }: { className?: string }) {
+	return (
+		<img
+			src={vrcalIconUrl}
+			className={className}
+			alt=""
+			aria-hidden="true"
+		/>
 	);
 }
 

@@ -87,7 +87,7 @@ pub fn global_info_json(app: &AppHandle) -> Response<Cow<'static, [u8]>> {
     let global_info = GlobalInfo {
         language: &config.language,
         theme: &config.theme,
-        version: Some(env!("CARGO_PKG_VERSION")),
+        version: Some(crate::commands::util::ALCOM_DISPLAY_VERSION),
         commit_hash: option_env!("COMMIT_HASH"),
         os_type,
         arch,

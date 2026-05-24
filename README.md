@@ -131,8 +131,8 @@ For more details, please refer to README for each action.
 
 ## GUI version of vrc-get
 
-Since late February 2024, an experimental gui version of vrc-get has been available.
-See [README of ALCOM][alcom] for more details.
+This repository is used as ALCOMD3, a downstream fork of ALCOM with a Google Material Design 3 inspired interface.
+See [README of ALCOMD3][alcom] for more details.
 
 [shields-github-deploy]: https://img.shields.io/github/deployments/anatawa12/vrc-get/master%20branch?label=github%20deployment
 [shields-crates-io-deploy]: https://img.shields.io/github/deployments/anatawa12/vrc-get/crates.io?label=crates.io%20deployment

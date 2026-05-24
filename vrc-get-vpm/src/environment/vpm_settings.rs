@@ -165,6 +165,10 @@ impl VpmSettings {
         self.parsed.user_repos.push(repo);
     }
 
+    pub(crate) fn set_user_repos(&mut self, repos: Vec<UserRepoSetting>) {
+        self.parsed.user_repos = repos;
+    }
+
     pub(crate) fn show_prerelease_packages(&self) -> bool {
         self.parsed.show_prerelease_packages
     }

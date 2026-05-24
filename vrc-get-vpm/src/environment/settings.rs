@@ -258,6 +258,33 @@ impl Settings {
         self.vpm.retain_user_repos(|x| !condition(x))
     }
 
+    pub fn reorder_user_repos(&mut self, ordered_ids: &[String]) -> bool {
+        let current = self.get_user_repos();
+        if ordered_ids.len() != current.len() {
+            return false;
+        }
+
+        let mut remaining = current.to_vec();
+        let mut reordered = Vec::with_capacity(remaining.len());
+
+        for id in ordered_ids {
+            let Some(index) = remaining
+                .iter()
+                .position(|repo| repo.id().or(repo.url().map(Url::as_str)) == Some(id.as_str()))
+            else {
+                return false;
+            };
+            reordered.push(remaining.remove(index));
+        }
+
+        if !remaining.is_empty() {
+            return false;
+        }
+
+        self.vpm.set_user_repos(reordered);
+        true
+    }
+
     // auto configurations
 
     /// Removes id-duplicated repositories

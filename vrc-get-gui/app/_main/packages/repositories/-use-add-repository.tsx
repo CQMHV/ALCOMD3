@@ -18,6 +18,7 @@ import { type DialogApi, type DialogContext, showDialog } from "@/lib/dialog";
 import { tc, tt } from "@/lib/i18n";
 import { queryClient } from "@/lib/query-client";
 import { toastError, toastSuccess } from "@/lib/toast";
+import { RepositoryPackageList } from "./-repository-package-list";
 
 const environmentRepositoriesInfo = queryOptions({
 	queryKey: ["environmentRepositoriesInfo"],
@@ -352,11 +353,7 @@ function Confirming({
 				<p className={"font-normal"}>
 					{tc("vpm repositories:dialog:packages")}
 				</p>
-				<ul className={"list-disc pl-6"}>
-					{repo.packages.map((info) => (
-						<li key={info.name}>{info.display_name ?? info.name}</li>
-					))}
-				</ul>
+				<RepositoryPackageList packages={repo.packages} />
 			</div>
 			<DialogFooter>
 				<Button onClick={() => dialog.close(false)}>

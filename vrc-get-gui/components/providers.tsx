@@ -3,7 +3,7 @@
 import { QueryClientProvider } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import type React from "react";
-import { Suspense, useCallback, useEffect } from "react";
+import { Suspense, useCallback, useEffect, useLayoutEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { ToastContainer } from "react-toastify";
 import Loading from "@/app/-loading";
@@ -15,9 +15,30 @@ import { DialogRoot, openSingleDialog } from "@/lib/dialog";
 import { isFindKey, useDocumentEvent } from "@/lib/events";
 import { tc } from "@/lib/i18n";
 import { processResult } from "@/lib/import-templates";
+import { applyStoredMaterialTheme, getStoredMaterialTheme } from "@/lib/material-theme";
 import { queryClient } from "@/lib/query-client";
 import { toastError, toastSuccess, toastThrownError } from "@/lib/toast";
 import { useTauriListen } from "@/lib/use-tauri-listen";
+
+function MaterialThemeInitializer() {
+	useLayoutEffect(() => {
+		applyStoredMaterialTheme();
+	}, []);
+
+	useEffect(() => {
+		const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+		const refreshTheme = () => {
+			if (getStoredMaterialTheme().mode === "auto") {
+				applyStoredMaterialTheme();
+			}
+		};
+
+		mediaQuery.addEventListener("change", refreshTheme);
+		return () => mediaQuery.removeEventListener("change", refreshTheme);
+	}, []);
+
+	return null;
+}
 
 export function Providers({ children }: { children: React.ReactNode }) {
 	const navigate = useNavigate();
@@ -109,6 +130,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
 	return (
 		<>
+			<MaterialThemeInitializer />
 			<ToastContainer
 				position="bottom-right"
 				autoClose={3000}

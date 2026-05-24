@@ -315,14 +315,29 @@ body {
 
 	--toastify-text-color-light: var(--foreground);
 
-	--toastify-color-progress-info: var(--toastify-color-info);
+	--toastify-color-progress-light: var(--md-sys-color-primary-container);
+	--toastify-color-progress-info: var(--md-sys-color-primary-container);
 	--toastify-color-progress-success: var(--toastify-color-success);
-	--toastify-color-progress-warning: var(--toastify-color-warning);
+	--toastify-color-progress-warning: color-mix(
+        in srgb,
+        var(--md-sys-color-primary) 72%,
+        var(--md-sys-color-primary-container)
+    );
 	--toastify-color-progress-error: var(--toastify-color-error);
 
 	.Toastify__toast {
 		border-radius: var(--radius);
 		box-shadow: 0 8px 24px rgb(0 0 0 / 0.12);
+        overflow: hidden;
+	}
+
+	.Toastify__progress-bar--wrp {
+		border-radius: 0 0 var(--radius) var(--radius);
+        overflow: hidden;
+	}
+
+	.Toastify__progress-bar {
+		border-radius: inherit;
 	}
 
 	.Toastify__close-button--light {
