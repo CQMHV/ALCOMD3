@@ -21,7 +21,7 @@ pub fn create_setup_exe(ctx: &BundleContext<'_>) -> Result<()> {
     let iss_setup = build_inno_setup_installer(ctx, &iscc, &webview_bootstrapper, &runner)?;
 
     // copy to bundle dir
-    let wrapper_in_bundle = ctx.bundle_dir.join("setup/alcom-setup.exe");
+    let wrapper_in_bundle = setup_exe_path(ctx);
     fs::copy(&iss_setup, &wrapper_in_bundle)
         .with_context(|| format!("copying: {}", wrapper_in_bundle.display()))?;
 
@@ -30,18 +30,18 @@ pub fn create_setup_exe(ctx: &BundleContext<'_>) -> Result<()> {
 }
 
 pub fn create_setup_exe_zip(ctx: &BundleContext<'_>) -> Result<()> {
-    let wrapper_in_bundle = ctx.bundle_dir.join("setup/alcom-setup.exe");
-    let zip = ctx.bundle_dir.join("setup/alcom-setup.exe.zip");
+    let wrapper_in_bundle = setup_exe_path(ctx);
+    let zip = wrapper_in_bundle.with_extension("exe.zip");
 
     let mut zip = zip::write::ZipWriter::new(fs::File::create(&zip).context("creating zip file")?);
     zip.start_file(
-        format!("ALCOM-{}-x86_64-setup.exe", cargo::gui_version()),
+        format!("ALCOMD3-{}-x86_64-setup.exe", cargo::gui_version()),
         FileOptions::DEFAULT,
     )
     .context("adding file to zip")?;
     std::io::copy(
         &mut std::io::BufReader::new(
-            fs::File::open(&wrapper_in_bundle).context("opening alcom-setup.exe")?,
+            fs::File::open(&wrapper_in_bundle).context("opening setup exe")?,
         ),
         &mut zip,
     )
@@ -50,7 +50,7 @@ pub fn create_setup_exe_zip(ctx: &BundleContext<'_>) -> Result<()> {
 }
 
 pub fn create_updater_exe(ctx: &BundleContext<'_>) -> Result<()> {
-    let iss_setup = ctx.bundle_dir.join("setup/alcom-setup.exe");
+    let iss_setup = setup_exe_path(ctx);
 
     let libs_dir = create_empty_libs(ctx)?;
 
@@ -72,6 +72,12 @@ pub fn create_updater_exe(ctx: &BundleContext<'_>) -> Result<()> {
 
     println!("created: {}", wrapper_in_bundle.display());
     Ok(())
+}
+
+fn setup_exe_path(ctx: &BundleContext<'_>) -> PathBuf {
+    ctx.bundle_dir
+        .join("setup")
+        .join(format!("alcomd3-{}-setup.exe", ctx.version()))
 }
 
 fn install_inno_setup(ctx: &BundleContext<'_>, runner: &WineRunner) -> Result<PathBuf> {
@@ -140,7 +146,7 @@ fn build_inno_setup_installer(
     let version = ctx.version();
     let mut cmd = runner.command(iscc);
 
-    const INSTALLER_NAME: &str = "alcom-inno-setup";
+    const INSTALLER_NAME: &str = "alcomd3-inno-setup";
 
     cmd.arg(runner.path(&ctx.gui_dir.join("bundle/windows-setup.iss")))
         .arg(format!("-DWebView2SetupPath={webview2}"))

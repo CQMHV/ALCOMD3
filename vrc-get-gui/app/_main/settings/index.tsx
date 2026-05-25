@@ -869,7 +869,7 @@ function AlcomCard() {
 
 	return (
 		<SettingsCard className={"flex flex-col gap-4"}>
-			<h2>ALCOM</h2>
+			<h2>ALCOMD3</h2>
 			<div className={"flex flex-row flex-wrap gap-2"}>
 				{globalInfo.checkForUpdates && (
 					<Button onClick={checkForUpdate}>

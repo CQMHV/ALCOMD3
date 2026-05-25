@@ -226,7 +226,7 @@ function ManageLogsHeading({
 								className={`compact:h-10 ${
 									autoScroll
 										? "bg-secondary border border-primary"
-										: "bg-transparent"
+										: "bg-transparent border border-transparent"
 								}`}
 							>
 								<ArrowDownFromLine className={"w-5 h-5"} />

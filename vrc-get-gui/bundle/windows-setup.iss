@@ -18,14 +18,14 @@
   #error LicensePath is not defined. Define with -DLicensePath=
 #endif
 
-#define MyAppName "ALCOM"
+#define MyAppName "ALCOMD3"
 #define MyAppPublisher "CQMHV"
 #define MyAppVersionInfoVersion "1.1.6.1"
 #define MyAppURL "https://vrc-get.anatawa12.com/alcom/"
 #define MyAppExeName "ALCOM.exe"
-#define MyAppAssocName "ALCOM Template"
+#define MyAppAssocName "ALCOMD3 Template"
 #define MyAppAssocExt ".alcomtemplate"
-#define MyAppAssocKey "ALCOM Project Template"
+#define MyAppAssocKey "ALCOMD3 Project Template"
 
 [Setup]
 AppId={{4C3D0631-AE29-4D20-A231-678D9CF8D6DB}
@@ -48,16 +48,17 @@ ArchitecturesInstallIn64BitMode=x64compatible
 ChangesAssociations=yes
 DisableProgramGroupPage=yes
 LicenseFile={#LicensePath}
+SetupIconFile={#SourcePath}\..\icons\icon.ico
 ; Remove the following line to run in administrative install mode (install for all users).
 PrivilegesRequired=lowest
 PrivilegesRequiredOverridesAllowed=dialog
-OutputBaseFilename=alcom
+OutputBaseFilename=alcomd3
 SolidCompression=yes
 WizardStyle=modern dynamic
 VersionInfoCompany={#MyAppPublisher}
 VersionInfoDescription={#MyAppName} Setup
 VersionInfoProductName={#MyAppName}
-VersionInfoProductVersion={#ApplicationVersion}
+VersionInfoProductVersion={#MyAppVersionInfoVersion}
 VersionInfoVersion={#MyAppVersionInfoVersion}
 ; allow users to install ALCOM to different location than before.
 ; this would cause ALCOM to be installed to multiple location, but user may move ALCOM
@@ -78,6 +79,10 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Source: "{#ApplicationPath}"; DestDir: "{app}"; DestName: "{#MyAppExeName}"; Flags: ignoreversion
 Source: "{#WebView2SetupPath}"; DestName: "MicrosoftEdgeWebView2Setup.exe"; DestDir: "{tmp}"; Flags: deleteafterinstall
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
+
+[InstallDelete]
+Type: files; Name: "{autoprograms}\ALCOM.lnk"
+Type: files; Name: "{autodesktop}\ALCOM.lnk"
 
 [Registry]
 Root: HKA; Subkey: "Software\Classes\{#MyAppAssocExt}\OpenWithProgids"; ValueType: string; ValueName: "{#MyAppAssocKey}"; ValueData: ""; Flags: uninsdeletevalue

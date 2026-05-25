@@ -299,7 +299,7 @@
 
 body {
 	--toastify-font-family: var(--font-sans);
-	--toastify-color-light: var(--background);
+	--toastify-color-light: var(--card);
 	/*--toastify-color-info: #3498db;*/
 	--toastify-color-success: var(--success);
 	/*--toastify-color-warning: #f1c40f;*/

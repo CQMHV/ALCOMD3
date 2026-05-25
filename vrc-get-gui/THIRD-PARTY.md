@@ -4,6 +4,8 @@
 
 The app icon was originally created by [lilxyzw](https://github.com/lilxyzw)
 and is licensed under the [CC BY 4.0](icon-LICENSE).
+The ALCOMD3 app icon is derived from the original ALCOM icon and recolored to
+the ALCOMD3 theme color `#6cb6ff`.
 
 ## [Anton-Regular.ttf](third-party/Anton-Regular.ttf)
 

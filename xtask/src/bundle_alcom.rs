@@ -215,11 +215,11 @@ impl<'a> BundleContext<'a> {
     }
 
     pub fn short_description(&self) -> &str {
-        "ALCOM - Alternative Creator Companion"
+        "ALCOMD3 - Alternative Creator Companion"
     }
 
     pub fn long_description(&self) -> &str {
-        "ALCOM is a fast and open-source alternative VCC (VRChat Creator Companion) written in rust and tauri."
+        "ALCOMD3 is a fast and open-source alternative VCC (VRChat Creator Companion) written in rust and tauri."
     }
 
     /// Binary name without extension (e.g. `ALCOM`).
@@ -229,7 +229,7 @@ impl<'a> BundleContext<'a> {
 
     /// The human-readable product name.
     pub fn product_name(&self) -> &str {
-        "ALCOM"
+        "ALCOMD3"
     }
 
     /// The machine-readable identifier of the product.

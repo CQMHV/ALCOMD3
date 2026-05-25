@@ -63,7 +63,7 @@ export function SideBar({ className }: { className?: string }) {
 
 	return (
 		<Card
-			className={`${className} flex w-[300px] max-w-[300px] p-3 ml-0 my-3 shrink-0 overflow-auto bg-background text-[var(--md-sys-color-on-surface)] compact:w-auto compact:p-1 compact:my-2`}
+			className={`${className} flex w-[260px] max-w-[260px] p-3 ml-0 my-3 shrink-0 overflow-auto bg-background text-[var(--md-sys-color-on-surface)] compact:w-auto compact:p-1 compact:my-2`}
 		>
 			<div className="flex flex-col gap-1 min-w-40 grow compact:min-w-0">
 				<SideBarItem href={"/projects"} text={tc("projects")} icon={List} />

@@ -90,7 +90,7 @@ pub fn startup(app: &mut App) {
             "main", /* the unique window label */
             tauri::WebviewUrl::App(start_page.into()),
         )
-        .title("ALCOM")
+        .title("ALCOMD3")
         .resizable(true)
         .incognito(true) // this prevents the webview from saving data
         .on_navigation(|url| {
