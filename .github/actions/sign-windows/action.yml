@@ -16,6 +16,10 @@ inputs:
   artifact-name:
     description: The name of artifact on github
     required: true
+  signpath-project-slug:
+    description: SignPath project slug
+    required: false
+    default: 'vrc-get'
 
 runs:
   using: "composite"
@@ -33,7 +37,7 @@ runs:
       with:
         api-token: ${{ inputs.signpath-api-token }}
         organization-id: 'c2d4dbf9-920f-4318-9017-7306e0fc7590'
-        project-slug: 'vrc-get'
+        project-slug: ${{ inputs.signpath-project-slug }}
         signing-policy-slug: ${{ inputs.signing-policy-slug }}
         github-artifact-id: '${{ steps.upload-unsigned-artifact.outputs.artifact-id }}'
         wait-for-completion: true

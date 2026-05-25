@@ -139,10 +139,19 @@ async function buildLicenseJson(rootDir: string): Promise<string> {
 		licenseText: await readFile("third-party/Anton-Regular-OFL.txt", "utf-8"),
 	});
 
+	// Noto Sans font
+	addPackageToLicenses({
+		name: "Noto Sans font",
+		version: "2.014",
+		url: "https://fonts.google.com/noto/specimen/Noto+Sans",
+		licenseId: "OFL-1.1",
+		licenseText: await readFile("third-party/NotoSans-OFL.txt", "utf-8"),
+	});
+
 	// The logo
 	addPackageToLicenses({
-		name: "ALCOM Icon",
-		version: "1.0.0",
+		name: "ALCOMD3 Icon, derived from ALCOM Icon",
+		version: "1.1.6-MD3.1",
 		url: "https://github.com/vrc-get/vrc-get",
 		licenseId: "CC-BY-4.0",
 		licenseText: await readFile("icon-LICENSE", "utf-8"),

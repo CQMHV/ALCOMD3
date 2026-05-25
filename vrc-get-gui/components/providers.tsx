@@ -15,7 +15,11 @@ import { DialogRoot, openSingleDialog } from "@/lib/dialog";
 import { isFindKey, useDocumentEvent } from "@/lib/events";
 import { tc } from "@/lib/i18n";
 import { processResult } from "@/lib/import-templates";
-import { applyStoredMaterialTheme, getStoredMaterialTheme } from "@/lib/material-theme";
+import {
+	applyPersistedMaterialTheme,
+	applyStoredMaterialTheme,
+	getPersistedMaterialTheme,
+} from "@/lib/material-theme";
 import { queryClient } from "@/lib/query-client";
 import { toastError, toastSuccess, toastThrownError } from "@/lib/toast";
 import { useTauriListen } from "@/lib/use-tauri-listen";
@@ -26,15 +30,21 @@ function MaterialThemeInitializer() {
 	}, []);
 
 	useEffect(() => {
+		void applyPersistedMaterialTheme();
+	}, []);
+
+	useEffect(() => {
 		const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-		const refreshTheme = () => {
-			if (getStoredMaterialTheme().mode === "auto") {
-				applyStoredMaterialTheme();
+		const refreshTheme = async () => {
+			const settings = await getPersistedMaterialTheme();
+			if (settings.mode === "auto") {
+				await applyPersistedMaterialTheme();
 			}
 		};
 
-		mediaQuery.addEventListener("change", refreshTheme);
-		return () => mediaQuery.removeEventListener("change", refreshTheme);
+		const listener = () => void refreshTheme();
+		mediaQuery.addEventListener("change", listener);
+		return () => mediaQuery.removeEventListener("change", listener);
 	}, []);
 
 	return null;

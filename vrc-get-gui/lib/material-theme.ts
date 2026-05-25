@@ -14,6 +14,7 @@ import {
 	SchemeTonalSpot,
 	SchemeVibrant,
 } from "@material/material-color-utilities";
+import { commands } from "@/lib/bindings";
 
 export const DEFAULT_THEME_SOURCE_HEX = "#6cb6ff";
 export const DEFAULT_THEME_MODE = "auto";
@@ -23,6 +24,7 @@ export const USER_THEME_SOURCE_KEY = "user_theme_source";
 export const USER_THEME_MODE_KEY = "user_theme_mode";
 export const USER_THEME_SCHEME_KEY = "user_theme_scheme";
 export const USER_THEME_STYLE_ID = "user-theme-style";
+const USER_THEME_CONFIG_PREFIX = "material:";
 
 export const THEME_SCHEME_LABELS = {
 	"tonal-spot": "settings:theme:scheme:tonal-spot",
@@ -141,6 +143,28 @@ export function getStoredMaterialTheme(): MaterialThemeSettings {
 	};
 }
 
+function parseStoredMaterialTheme(value: unknown): MaterialThemeSettings | null {
+	if (typeof value !== "string") return null;
+	if (!value.startsWith(USER_THEME_CONFIG_PREFIX)) return null;
+
+	try {
+		const parsed = JSON.parse(value.slice(USER_THEME_CONFIG_PREFIX.length));
+		return {
+			sourceHex:
+				normalizeHexColor(parsed?.sourceHex) ?? DEFAULT_THEME_SOURCE_HEX,
+			mode: normalizeThemeMode(parsed?.mode),
+			scheme: normalizeThemeScheme(parsed?.scheme),
+		};
+	} catch (error) {
+		console.warn("failed to parse material theme config", error);
+		return null;
+	}
+}
+
+function serializeMaterialTheme(settings: MaterialThemeSettings) {
+	return `${USER_THEME_CONFIG_PREFIX}${JSON.stringify(settings)}`;
+}
+
 export function saveMaterialTheme({
 	sourceHex,
 	mode,
@@ -151,8 +175,40 @@ export function saveMaterialTheme({
 	localStorage.setItem(USER_THEME_SCHEME_KEY, scheme);
 }
 
+export async function getPersistedMaterialTheme() {
+	try {
+		const configTheme = await commands.environmentTheme();
+		const parsed = parseStoredMaterialTheme(configTheme);
+		if (parsed) {
+			saveMaterialTheme(parsed);
+			return parsed;
+		}
+	} catch (error) {
+		console.warn("failed to load material theme config", error);
+	}
+
+	return getStoredMaterialTheme();
+}
+
+export async function savePersistedMaterialTheme(
+	settings: MaterialThemeSettings,
+) {
+	saveMaterialTheme(settings);
+	try {
+		await commands.environmentSetTheme(serializeMaterialTheme(settings));
+	} catch (error) {
+		console.warn("failed to save material theme config", error);
+	}
+}
+
 export function applyStoredMaterialTheme() {
 	const settings = getStoredMaterialTheme();
+	applyMaterialTheme(settings.sourceHex, settings.mode, settings.scheme);
+	return settings;
+}
+
+export async function applyPersistedMaterialTheme() {
+	const settings = await getPersistedMaterialTheme();
 	applyMaterialTheme(settings.sourceHex, settings.mode, settings.scheme);
 	return settings;
 }

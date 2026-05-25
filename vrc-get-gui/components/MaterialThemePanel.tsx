@@ -17,11 +17,12 @@ import {
 	DEFAULT_THEME_MODE,
 	DEFAULT_THEME_SCHEME,
 	DEFAULT_THEME_SOURCE_HEX,
+	getPersistedMaterialTheme,
 	getStoredMaterialTheme,
 	hctFromHex,
 	hexFromHctInputs,
 	normalizeHexColor,
-	saveMaterialTheme,
+	savePersistedMaterialTheme,
 	THEME_SCHEME_LABELS,
 	THEME_SCHEME_NAMES,
 	type ThemeMode,
@@ -77,11 +78,30 @@ function MaterialThemePanel() {
 	const [mode, setMode] = useState<ThemeMode>(initialTheme.mode);
 	const [scheme, setScheme] = useState<ThemeSchemeName>(initialTheme.scheme);
 	const [hct, setHct] = useState(() => hctFromHex(initialTheme.sourceHex));
+	const [loadedPersistedTheme, setLoadedPersistedTheme] = useState(false);
 
 	useEffect(() => {
+		let cancelled = false;
+		void getPersistedMaterialTheme().then((theme) => {
+			if (cancelled) return;
+			setSourceHex(theme.sourceHex);
+			setHexText(theme.sourceHex);
+			setMode(theme.mode);
+			setScheme(theme.scheme);
+			setHct(hctFromHex(theme.sourceHex));
+			applyMaterialTheme(theme.sourceHex, theme.mode, theme.scheme);
+			setLoadedPersistedTheme(true);
+		});
+		return () => {
+			cancelled = true;
+		};
+	}, []);
+
+	useEffect(() => {
+		if (!loadedPersistedTheme) return;
 		applyMaterialTheme(sourceHex, mode, scheme);
-		saveMaterialTheme({ sourceHex, mode, scheme });
-	}, [sourceHex, mode, scheme]);
+		void savePersistedMaterialTheme({ sourceHex, mode, scheme });
+	}, [sourceHex, mode, scheme, loadedPersistedTheme]);
 
 	useEffect(() => {
 		if (mode !== "auto") return;
