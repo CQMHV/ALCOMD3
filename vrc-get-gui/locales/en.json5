@@ -55,8 +55,8 @@
 
 // Setup Page
     "setup:loading": "Loading settings...",
-    "setup:entry:welcome": "Welcome to ALCOM!",
-    "setup:entry:welcome description": "ALCOM is an Open-Source Creator Companion for VRChat and other Unity Projects.",
+    "setup:entry:welcome": "Welcome to ALCOMD3!",
+    "setup:entry:welcome description": "ALCOMD3 is an Open-Source Creator Companion for VRChat and other Unity Projects.",
     "setup:next": "Next",
     "setup:back": "Back",
 
@@ -65,18 +65,18 @@
 
     "setup:steps card:UnityHub": "Unity Hub",
     "setup:unity-hub:heading": "Install Unity Hub",
-    "setup:unity-hub:description": "To get started, you need to install Unity Hub. Unity Hub is the preferred way to install and manage Unity versions.<br/>ALCOM will suggest you installing Unity with Unity Hub if you don't have and necessary for the project or operation.",
+    "setup:unity-hub:description": "To get started, you need to install Unity Hub. Unity Hub is the preferred way to install and manage Unity versions.<br/>ALCOMD3 will suggest you installing Unity with Unity Hub if you don't have and necessary for the project or operation.",
     "setup:unity-hub:using this unity hub": "Using this Unity Hub",
     "setup:unity-hub:download unity hub from unity.com": "Download Unity Hub from unity.com",
     "setup:unity-hub:unity hub link": "https://unity.com/download",
     "setup:unity-hub:recheck installation": "Recheck Installation",
     "setup:unity-hub:detection failed collapse": "Have you installed Unity Hub?",
-    "setup:unity-hub:detection failed description": "Please click the above \"Recheck Installation\" button to re-detect Unity Hub installation. If this doesn't work, ALCOM fails to detect your Unity Hub installation. Please set Unity Hub Manually below.",
+    "setup:unity-hub:detection failed description": "Please click the above \"Recheck Installation\" button to re-detect Unity Hub installation. If this doesn't work, ALCOMD3 fails to detect your Unity Hub installation. Please set Unity Hub Manually below.",
     "setup:unity-hub:not found": "Unity Hub was not found.",
 
     "setup:steps card:ProjectPath": "Save Location",
     "setup:project-path:heading": "Project Save Location",
-    "setup:project-path:description": "When you create project with ALCOM, the project will be saved in this location.",
+    "setup:project-path:description": "When you create project with ALCOMD3, the project will be saved in this location.",
 
     "setup:steps card:Backups": "Backup Settings",
     "setup:backups:heading": "Project Backup Settings",
@@ -86,19 +86,20 @@
 
     "setup:steps card:SystemSetting": "System Config",
     "setup:system-setting:heading": "System Configurations",
-    "setup:system-setting:vcc scheme description": "You can use ALCOM for vcc:// scheme instead of VCC to install repository to your PC. ALCOM and VCC will shares the same repository list but using ALCOM will give you quick installation without opening VCC.",
+    "setup:system-setting:vcc scheme description": "You can use ALCOMD3 for vcc:// scheme instead of VCC to install repository to your PC. ALCOMD3 and VCC will shares the same repository list but using ALCOMD3 will give you quick installation without opening VCC.",
     "setup:system-setting:macos bug message": "There is nothing to configure on macOS. (This page should not be shown, showing this page is a bug)",
     "setup:system-setting:hostname-with-non-ascii": "Your hostname (PC Name) contains non-ASCII characters. This may cause problems with Unity 2022.<br/>It's highly recommended to change your PC Name to ASCII characters.",
 
     "setup:finish:heading": "Setup Completed!",
-    "setup:finish:description": "You have successfully completed the setup process!<br/>Let's start using ALCOM!",
-    "setup:finish:next": "Start using ALCOM",
+    "setup:finish:description": "You have successfully completed the setup process!<br/>Let's start using ALCOMD3!",
+    "setup:finish:next": "Start using ALCOMD3",
 
 
 // Side Bar
     "sidebar:bad hostname": "Bad hostname",
     "sidebar:dialog:bad hostname": "There are issues with your hostname",
     "sidebar:dialog:bad hostname description": "You're using non-ASCII characters in hostname (PC Name). <br/>This may cause issues with modern Unity.<br/>It's highly recommended to change your PC Name to alphanumeric characters.",
+    "sidebar:booth": "BOOTH",
     "sidebar:vrchat avatar learn": "VRChatAvatarLearn",
     "sidebar:version": "Version: {{version}}",
 
@@ -266,6 +267,27 @@
     "projects:manage:toast:some package has newer latest with incompatible unity": "Some packages have newer versions that are incompatible with the Unity version.",
     "projects:manage:toast:selected packages removed": "Selected packages were removed successfully.",
     "projects:manage:toast:selected packages reinstalled": "Selected packages were reinstalled successfully.",
+    "projects:manage:progress:title": "Applying package changes",
+    "projects:manage:progress:description": "Target project: {{projectPath}}",
+    "projects:manage:progress:cancel": "Stop",
+    "projects:manage:progress:cancelling": "Stopping...",
+    "projects:manage:progress:minimize": "Minimize",
+    "projects:manage:progress:restore": "View install progress",
+    "projects:manage:progress:retry": "Retry",
+    "projects:manage:progress:percent": "{{percent}}%",
+    "projects:manage:progress:summary": "Completed: {{completed}}, failed: {{failed}}",
+    "projects:manage:progress:status:waiting": "Waiting",
+    "projects:manage:progress:status:downloading": "Downloading",
+    "projects:manage:progress:status:extracting": "Extracting",
+    "projects:manage:progress:status:installing": "Installing",
+    "projects:manage:progress:status:removing": "Removing",
+    "projects:manage:progress:status:completed": "Completed",
+    "projects:manage:progress:status:failed": "Failed",
+    "projects:manage:progress:completed": "Package changes completed",
+    "projects:manage:progress:install completed": "Package installation completed",
+    "projects:manage:progress:remove completed": "Package removal completed",
+    "projects:manage:progress:reinstall completed": "Package reinstallation completed",
+    "projects:manage:progress:failed": "Package changes failed",
 
     // Notes for translators:
     // Each "projects:manage:dialog:(downgrade|upgrade) (major|minor)"
@@ -480,11 +502,11 @@
     "settings:toast:default project path updated": "Updated the default project path successfully!",
 
     "settings:backup:path": "Backup Path",
-    "settings:backup:path description": "The backup path is the directory where ALCOM will create backup zips of the projects.",
+    "settings:backup:path description": "The backup path is the directory where ALCOMD3 will create backup zips of the projects.",
     "settings:toast:backup path updated": "Updated the project backup path successfully.",
 
     "settings:backup:format": "Backup Archive Format",
-    "settings:backup:format description": "Backups are saved as an archive file. <br/>You can select the format of the backup archive. <br/>Default setting is the best format ALCOM thinks at the moment and current default behavior is represented in braces.<br/>Compressing the archive will make backup took longer but will save disk space.",
+    "settings:backup:format description": "Backups are saved as an archive file. <br/>You can select the format of the backup archive. <br/>Default setting is the best format ALCOMD3 thinks at the moment and current default behavior is represented in braces.<br/>Compressing the archive will make backup took longer but will save disk space.",
     "settings:backup:format:default": "Default (Low Compression zip)",
     "settings:backup:format:zip-store": "Uncompressed zip (Fast)",
     "settings:backup:format:zip-fast": "Low Compression zip (Slow)",
@@ -508,6 +530,8 @@
 
     "settings:gui compact": "Compact GUI Elements",
     "settings:gui compact description": "Reduces text and padding in some GUI elements for a more compact appearance. Any hidden text can be viewed via tooltips.",
+    "settings:hide sidebar links": "Hide sidebar links",
+    "settings:hide sidebar links description": "Hide the BOOTH, VRChatAvatarLearn, and version buttons in the sidebar.",
 
     "settings:appearance": "Appearance",
     "settings:language": "Language",
@@ -560,7 +584,7 @@
     "check update:dialog:downloading...": "Downloading the update...",
     "check update:dialog:relaunching...": "Relaunching ALCOM...",
 
-    "settings:use alcom for vcc scheme": "Use ALCOM for <code>vcc:</code> URL Scheme",
+    "settings:use alcom for vcc scheme": "Use ALCOMD3 for <code>vcc:</code> URL Scheme",
     "settings:use vcc scheme description": "The <code>vcc:</code> URL scheme is used to open VCC to add a repository from web browsers.<br>As an alternative to the VCC, you can use ALCOM as an application to add repository from web browsers.<br>If this is enabled, ALCOM will register <code>vcc:</code> URL scheme handler on startup.<br>After (re)installing/upgrading VCC, you need to re-start ALCOM or manually register with button above to override VCC's registration.",
     "settings:register vcc scheme now": "Register URL Scheme Handler Now",
     "settings:toast:vcc scheme installed": "ALCOM was registered as the <code>vcc:</code> URL scheme handler.",

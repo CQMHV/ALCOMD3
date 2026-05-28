@@ -13,6 +13,7 @@ import {
 	List,
 	Package,
 	Settings,
+	Store,
 	SwatchBook,
 } from "lucide-react";
 import type React from "react";
@@ -58,6 +59,14 @@ export function SideBar({ className }: { className?: string }) {
 		refetchInterval: false,
 		initialData: false,
 	});
+	const hideSidebarLinks = useQuery({
+		queryKey: ["environmentHideSidebarLinks"],
+		queryFn: commands.environmentHideSidebarLinks,
+		refetchOnReconnect: false,
+		refetchOnWindowFocus: false,
+		refetchInterval: false,
+		initialData: false,
+	});
 
 	const isDev = import.meta.env.DEV;
 
@@ -85,11 +94,21 @@ export function SideBar({ className }: { className?: string }) {
 				)}
 				{isDev && <StyleQuickAccess />}
 				<div className={"grow"} />
-				<SideBarExternalLinkButton
-					href="https://vrcal.cqmhv.com"
-					text={tc("sidebar:vrchat avatar learn")}
-				/>
-				<VersionCopyButton />
+				{!hideSidebarLinks.data && (
+					<>
+						<SideBarExternalLinkButton
+							href="https://booth.pm"
+							text={tc("sidebar:booth")}
+							icon={Store}
+						/>
+						<SideBarExternalLinkButton
+							href="https://vrcal.cqmhv.com"
+							text={tc("sidebar:vrchat avatar learn")}
+							icon={VrcalIcon}
+						/>
+						<VersionCopyButton />
+					</>
+				)}
 				{isBadHostName.data && <BadHostNameDialogButton />}
 			</div>
 		</Card>
@@ -130,15 +149,14 @@ function SideBarItem({
 function SideBarExternalLinkButton({
 	href,
 	text,
+	icon,
 }: {
 	href: string;
 	text: React.ReactNode;
+	icon: React.ComponentType<{ className?: string }>;
 }) {
 	return (
-		<SideBarButton
-			icon={VrcalIcon}
-			onClick={() => void commands.utilOpenUrl(href)}
-		>
+		<SideBarButton icon={icon} onClick={() => void commands.utilOpenUrl(href)}>
 			{text}
 		</SideBarButton>
 	);
@@ -167,12 +185,7 @@ function VersionCopyButton() {
 
 function VrcalIcon({ className }: { className?: string }) {
 	return (
-		<img
-			src={vrcalIconUrl}
-			className={className}
-			alt=""
-			aria-hidden="true"
-		/>
+		<img src={vrcalIconUrl} className={className} alt="" aria-hidden="true" />
 	);
 }
 

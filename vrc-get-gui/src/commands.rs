@@ -74,6 +74,8 @@ pub(crate) fn handlers() -> impl Fn(Invoke) -> bool + Send + Sync + 'static {
         environment::config::environment_set_gui_animation,
         environment::config::environment_gui_compact,
         environment::config::environment_set_gui_compact,
+        environment::config::environment_hide_sidebar_links,
+        environment::config::environment_set_hide_sidebar_links,
         environment::config::environment_project_view_mode,
         environment::config::environment_set_project_view_mode,
         environment::config::environment_set_unity_hub_access_method,
@@ -135,6 +137,7 @@ pub(crate) fn handlers() -> impl Fn(Invoke) -> bool + Send + Sync + 'static {
         project::project_resolve,
         project::project_remove_packages,
         project::project_apply_pending_changes,
+        project::project_cancel_apply_pending_changes,
         project::project_clear_pending_changes,
         project::project_migrate_project_to_2022,
         project::project_call_unity_for_migration,
@@ -183,6 +186,8 @@ pub(crate) fn export_ts() {
             environment::config::environment_set_gui_animation,
             environment::config::environment_gui_compact,
             environment::config::environment_set_gui_compact,
+            environment::config::environment_hide_sidebar_links,
+            environment::config::environment_set_hide_sidebar_links,
             environment::config::environment_project_view_mode,
             environment::config::environment_set_project_view_mode,
             environment::config::environment_set_unity_hub_access_method,
@@ -244,6 +249,7 @@ pub(crate) fn export_ts() {
             project::project_resolve,
             project::project_remove_packages,
             project::project_apply_pending_changes,
+            project::project_cancel_apply_pending_changes,
             project::project_clear_pending_changes,
             project::project_migrate_project_to_2022,
             project::project_call_unity_for_migration,
@@ -271,6 +277,7 @@ pub(crate) fn export_ts() {
         ])
         .typ::<uri_custom_scheme::GlobalInfo>()
         .typ::<environment::projects::TauriUpdatedRealProjectInfo>()
+        .typ::<project::TauriProjectApplyProgress>()
         .export(specta_typescript::Typescript::default(), export_path)
         .unwrap();
 }

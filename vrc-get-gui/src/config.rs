@@ -36,6 +36,8 @@ pub struct GuiConfig {
     pub gui_animation: bool,
     #[serde(default = "gui_compact_default")]
     pub gui_compact: bool,
+    #[serde(default)]
+    pub hide_sidebar_links: bool,
     #[serde(default = "project_view_mode_default")]
     pub project_view_mode: String,
     #[serde(default)]
@@ -83,6 +85,7 @@ impl Default for GuiConfig {
             logs_level: log_level_default(),
             gui_animation: true,
             gui_compact: gui_compact_default(),
+            hide_sidebar_links: false,
             project_view_mode: project_view_mode_default(),
             unity_hub_access_method: UnityHubAccessMethod::ReadConfig,
             recent_project_locations: Vec::new(),

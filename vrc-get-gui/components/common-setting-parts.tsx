@@ -185,6 +185,54 @@ export function GuiCompactSwitch() {
 	);
 }
 
+const environmentHideSidebarLinks = queryOptions({
+	queryKey: ["environmentHideSidebarLinks"],
+	queryFn: commands.environmentHideSidebarLinks,
+	initialData: false,
+});
+
+export function HideSidebarLinksSwitch() {
+	const queryClient = useQueryClient();
+	const hideSidebarLinks = useQuery(environmentHideSidebarLinks);
+	const setHideSidebarLinks = useMutation({
+		mutationFn: async (hidden: boolean) =>
+			await commands.environmentSetHideSidebarLinks(hidden),
+		onMutate: async (hidden) => {
+			await queryClient.cancelQueries(environmentHideSidebarLinks);
+			const current = queryClient.getQueryData(
+				environmentHideSidebarLinks.queryKey,
+			);
+			if (current != null) {
+				queryClient.setQueryData(environmentHideSidebarLinks.queryKey, hidden);
+			}
+			return current;
+		},
+		onError: (e, _, prev) => {
+			console.error(e);
+			toastThrownError(e);
+			queryClient.setQueryData(environmentHideSidebarLinks.queryKey, prev);
+		},
+		onSettled: async () => {
+			await queryClient.invalidateQueries(environmentHideSidebarLinks);
+		},
+	});
+
+	return (
+		<div>
+			<label className={"flex items-center gap-2"}>
+				<Checkbox
+					checked={hideSidebarLinks.data}
+					onCheckedChange={(e) => setHideSidebarLinks.mutate(e === true)}
+				/>
+				{tc("settings:hide sidebar links")}
+			</label>
+			<p className={"text-sm whitespace-normal"}>
+				{tc("settings:hide sidebar links description")}
+			</p>
+		</div>
+	);
+}
+
 export function FilePathRow({
 	path,
 	notFoundMessage,

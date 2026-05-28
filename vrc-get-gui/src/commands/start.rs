@@ -153,6 +153,13 @@ pub fn startup(app: &mut App) {
                     }
                 }));
             }
+            WindowEvent::CloseRequested { api, .. } => {
+                let project_apply = cloned.state::<ProjectApplyState>();
+                if project_apply.is_running() {
+                    api.prevent_close();
+                    project_apply.abort();
+                }
+            }
             _ => {}
         });
 

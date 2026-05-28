@@ -21,8 +21,8 @@ import { type DialogContext, showDialog } from "@/lib/dialog";
 import { tc, tt } from "@/lib/i18n";
 import { queryClient } from "@/lib/query-client";
 import { toastSuccess } from "@/lib/toast";
-import { RepositoryPackageList } from "./-repository-package-list";
 import { useEffectEvent } from "@/lib/use-effect-event";
+import { RepositoryPackageList } from "./-repository-package-list";
 
 type ParsedRepositories = {
 	repositories: TauriRepositoryDescriptor[];
@@ -32,6 +32,11 @@ type ParsedRepositories = {
 const environmentRepositoriesInfo = queryOptions({
 	queryKey: ["environmentRepositoriesInfo"],
 	queryFn: commands.environmentRepositoriesInfo,
+});
+
+const environmentPackages = queryOptions({
+	queryKey: ["environmentPackages"],
+	queryFn: commands.environmentPackages,
 });
 
 export async function importRepositories() {
@@ -67,10 +72,14 @@ export async function importRepositories() {
 
 	dialog.replace(<AddingRepositories />);
 	await commands.environmentImportAddRepositories(repositoriesToAdd);
+	await commands.environmentRefetchPackages();
 	toastSuccess(tt("vpm repositories:toast:repository added"));
 	dialog.close();
 
-	await queryClient.invalidateQueries(environmentRepositoriesInfo);
+	await Promise.all([
+		queryClient.invalidateQueries(environmentRepositoriesInfo),
+		queryClient.invalidateQueries(environmentPackages),
+	]);
 }
 
 function shortRepositoryDescription(

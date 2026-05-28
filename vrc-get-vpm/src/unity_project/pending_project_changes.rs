@@ -3,17 +3,14 @@ use crate::traits::AbortCheck;
 use crate::unity_project::find_legacy_assets::collect_legacy_assets;
 use crate::version::DependencyRange;
 use crate::{PackageInfo, UnityProject, unity_compatible};
-use crate::{PackageInstaller, io};
+use crate::{PackageInstallProgress, PackageInstallProgressKind, PackageInstaller, io};
 use either::Either;
 use futures::future::{join, join_all};
-use futures::prelude::*;
 use log::debug;
 use std::collections::hash_map::Entry;
 use std::collections::{HashMap, HashSet, VecDeque};
-use std::future::ready;
 use std::marker::PhantomData;
 use std::path::{Path, PathBuf};
-use std::sync::OnceLock;
 
 /// Represents Packages to be added and folders / packages to be removed
 ///
@@ -541,6 +538,17 @@ impl UnityProject {
         env: &'env Env,
         request: PendingProjectChanges<'env>,
     ) -> io::Result<()> {
+        let abort = AbortCheck::new();
+        self.apply_pending_changes_with_abort(env, request, &abort)
+            .await
+    }
+
+    pub async fn apply_pending_changes_with_abort<'env, Env: PackageInstaller>(
+        &mut self,
+        env: &'env Env,
+        request: PendingProjectChanges<'env>,
+        abort: &AbortCheck,
+    ) -> io::Result<()> {
         /*
         Apply pending changes consists of following steps:
         - Extract new packages to temp directory
@@ -554,7 +562,6 @@ impl UnityProject {
 
         let mut installs = Vec::new();
         let mut remove_names = Vec::new();
-        let mut uninstall_packages = Vec::new();
         let mut remove_unlocked_names = Vec::new();
 
         for (name, change) in &request.package_changes {
@@ -562,12 +569,10 @@ impl UnityProject {
                 PackageChange::Install(change) => {
                     if let Some(package) = change.package {
                         installs.push(package);
-                        uninstall_packages.push(name.as_ref());
                     }
                 }
                 PackageChange::Remove(_) => {
                     remove_names.push(name.as_ref());
-                    uninstall_packages.push(name.as_ref());
                 }
             }
         }
@@ -575,7 +580,6 @@ impl UnityProject {
         for info in request.conflicts.values() {
             for x in &info.unlocked_names {
                 remove_unlocked_names.push(x.as_ref());
-                uninstall_packages.push(x.as_ref());
             }
         }
 
@@ -583,24 +587,58 @@ impl UnityProject {
         let mut context = InstallPackageContext::new(&temp_dir_base);
 
         // Before all, prepare temp dir
+        abort.check()?;
         self.io.create_dir_all(&context.remove_temp_dir).await?;
         self.io.create_dir_all(&context.install_temp_dir).await?;
 
-        let mut r: io::Result<()> = async {
-            // Firstly, extract packages
-            extract_packages(&self.io, env, &context.install_temp_dir, &installs).await?;
+        // Firstly, extract packages. Individual package failures do not stop other packages.
+        let mut package_failures =
+            extract_packages(&self.io, env, &context.install_temp_dir, &installs, abort).await;
+        abort.check()?;
+        let successful_installs = installs
+            .iter()
+            .copied()
+            .filter(|package| !package_failures.failed_packages.contains(package.name()))
+            .collect::<Vec<_>>();
 
+        let mut r: io::Result<()> = async {
             // Then, update packages directory
-            context
-                .move_uninstall_packages(&self.io, &uninstall_packages)
-                .await?;
-            context.move_install_packages(&self.io, &installs).await?;
+            let mut uninstall_packages = remove_names.clone();
+            uninstall_packages.extend(successful_installs.iter().map(|package| package.name()));
+            uninstall_packages.extend(remove_unlocked_names.iter().copied());
+
+            abort.check()?;
+            package_failures.extend(
+                context
+                    .move_uninstall_packages(&self.io, env, abort, &uninstall_packages)
+                    .await,
+            );
+            abort.check()?;
+            let uninstall_failed_packages = package_failures.failed_packages.clone();
+            let successful_installs = successful_installs
+                .iter()
+                .copied()
+                .filter(|package| !uninstall_failed_packages.contains(package.name()))
+                .collect::<Vec<_>>();
+            package_failures.extend(
+                context
+                    .move_install_packages(&self.io, env, abort, &successful_installs)
+                    .await,
+            );
+            abort.check()?;
+            let failed_packages = package_failures.failed_packages.clone();
 
             // apply changes to manifest
             for (name, change) in &request.package_changes {
+                if failed_packages.contains(name.as_ref()) {
+                    continue;
+                }
                 if let PackageChange::Install(change) = change {
                     if let Some(package) = change.package
                         && change.add_to_locked
+                        && successful_installs
+                            .iter()
+                            .any(|installed| installed.name() == package.name())
                     {
                         self.manifest.add_locked(
                             package.name(),
@@ -614,7 +652,12 @@ impl UnityProject {
                     }
                 }
             }
-            self.manifest.remove_packages(remove_names.iter().copied());
+            self.manifest.remove_packages(
+                remove_names
+                    .iter()
+                    .copied()
+                    .filter(|name| !failed_packages.contains(*name)),
+            );
             self.save().await?;
             Ok(())
         }
@@ -691,6 +734,10 @@ impl UnityProject {
                     .map(|(p, _)| p.as_ref()),
             )
             .await;
+
+            if let Some(package_error) = package_failures.error {
+                r = Err(package_error);
+            }
         }
 
         async fn cleanup_temp_dir(io: &DefaultProjectIo) {
@@ -710,31 +757,49 @@ async fn extract_packages<Env: PackageInstaller>(
     env: &Env,
     extract_dir: &Path,
     packages: &[PackageInfo<'_>],
-) -> io::Result<()> {
-    let abort = AbortCheck::new();
-    let mut error_store = OnceLock::new();
+    abort: &AbortCheck,
+) -> PackageOperationFailures {
+    let mut failures = PackageOperationFailures::default();
 
     // resolve all packages
-    join_all(packages.iter().map(|package| {
-        async {
-            env.install_package(io, *package, &extract_dir.join(package.name()), &abort)
-                .await
-        }
-        .then(|x| {
-            if let Err(e) = x {
-                error_store.set(e).ok();
-                abort.abort();
-            }
-            ready(())
-        })
+    let results = join_all(packages.iter().map(|package| async {
+        (
+            package.name(),
+            env.install_package(io, *package, &extract_dir.join(package.name()), abort)
+                .await,
+        )
     }))
     .await;
 
-    if let Some(err) = error_store.take() {
-        return Err(err);
+    for (package_name, result) in results {
+        if let Err(error) = result {
+            failures.push(package_name, error);
+        }
     }
 
-    Ok(())
+    failures
+}
+
+#[derive(Default)]
+struct PackageOperationFailures {
+    failed_packages: HashSet<Box<str>>,
+    error: Option<io::Error>,
+}
+
+impl PackageOperationFailures {
+    fn push(&mut self, package_name: &str, error: io::Error) {
+        self.failed_packages.insert(package_name.into());
+        if self.error.is_none() {
+            self.error = Some(error);
+        }
+    }
+
+    fn extend(&mut self, other: PackageOperationFailures) {
+        self.failed_packages.extend(other.failed_packages);
+        if self.error.is_none() {
+            self.error = other.error;
+        }
+    }
 }
 
 /// The context that holds information to restore changes to packages directory when recoverable error occurs
@@ -760,13 +825,20 @@ impl<'a> InstallPackageContext<'a> {
     async fn move_uninstall_packages(
         &mut self,
         io: &DefaultProjectIo,
+        env: &impl PackageInstaller,
+        abort: &AbortCheck,
         packages: &[&'a str],
-    ) -> io::Result<()> {
+    ) -> PackageOperationFailures {
+        let mut failures = PackageOperationFailures::default();
         // it's expected to cheap to rename (link) packages to temp dir,
         // so we do it sequentially for simplicity
         let packages_dir = Path::new("Packages");
 
         for package in packages {
+            if let Err(e) = abort.check() {
+                failures.push(package, e);
+                break;
+            }
             if self.removed.contains(package) {
                 continue;
             }
@@ -774,37 +846,74 @@ impl<'a> InstallPackageContext<'a> {
             let package_dir = packages_dir.join(package);
             let copied_dir = self.remove_temp_dir.join(package);
 
+            report_package_progress(env, package, PackageInstallProgressKind::RemoveStarted);
             match io.rename(&package_dir, &copied_dir).await {
                 Err(ref e) if e.kind() == io::ErrorKind::NotFound => {
                     // the package does not exist, ignore this
+                    report_package_progress(
+                        env,
+                        package,
+                        PackageInstallProgressKind::RemoveFinished,
+                    );
                 }
-                Err(e) => return Err(e),
+                Err(e) => {
+                    report_package_failed(env, package, &e);
+                    failures.push(package, e);
+                }
                 Ok(()) => {
                     self.removed.insert(package);
+                    report_package_progress(
+                        env,
+                        package,
+                        PackageInstallProgressKind::RemoveFinished,
+                    );
                 }
             }
         }
 
-        Ok(())
+        failures
     }
 
     async fn move_install_packages(
         &mut self,
         io: &DefaultProjectIo,
+        env: &impl PackageInstaller,
+        abort: &AbortCheck,
         packages: &[PackageInfo<'a>],
-    ) -> io::Result<()> {
+    ) -> PackageOperationFailures {
+        let mut failures = PackageOperationFailures::default();
         let packages_dir = Path::new("Packages");
 
         for package in packages.iter() {
-            io.rename(
-                &self.install_temp_dir.join(package.name()),
-                &packages_dir.join(package.name()),
-            )
-            .await?;
+            if let Err(e) = abort.check() {
+                failures.push(package.name(), e);
+                break;
+            }
+            report_package_progress(
+                env,
+                package.name(),
+                PackageInstallProgressKind::InstallStarted,
+            );
+            if let Err(e) = io
+                .rename(
+                    &self.install_temp_dir.join(package.name()),
+                    &packages_dir.join(package.name()),
+                )
+                .await
+            {
+                report_package_failed(env, package.name(), &e);
+                failures.push(package.name(), e);
+                continue;
+            }
             self.installed.insert(package.name());
+            report_package_progress(
+                env,
+                package.name(),
+                PackageInstallProgressKind::InstallFinished,
+            );
         }
 
-        Ok(())
+        failures
     }
 
     async fn rollback_changes(&mut self, io: &DefaultProjectIo) -> io::Result<()> {
@@ -828,6 +937,27 @@ impl<'a> InstallPackageContext<'a> {
 
         Ok(())
     }
+}
+
+fn report_package_progress(
+    env: &impl PackageInstaller,
+    package_name: &str,
+    kind: PackageInstallProgressKind,
+) {
+    env.report_progress(PackageInstallProgress {
+        package_name: package_name.into(),
+        kind,
+    });
+}
+
+fn report_package_failed(env: &impl PackageInstaller, package_name: &str, error: &io::Error) {
+    report_package_progress(
+        env,
+        package_name,
+        PackageInstallProgressKind::Failed {
+            message: error.to_string().into(),
+        },
+    );
 }
 
 async fn remove_assets(

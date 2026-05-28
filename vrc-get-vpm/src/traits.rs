@@ -7,6 +7,7 @@ use core::option::Option;
 use futures::prelude::*;
 use indexmap::IndexMap;
 use std::convert::Infallible;
+use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 use url::Url;
 
@@ -45,16 +46,37 @@ pub trait PackageInstaller {
         dest_dir: &std::path::Path,
         abort: &AbortCheck,
     ) -> impl Future<Output = io::Result<()>>;
+
+    fn report_progress(&self, _progress: PackageInstallProgress) {}
+}
+
+#[derive(Clone, Debug)]
+pub enum PackageInstallProgressKind {
+    DownloadStarted,
+    DownloadFinished,
+    ExtractStarted,
+    ExtractFinished,
+    RemoveStarted,
+    RemoveFinished,
+    InstallStarted,
+    InstallFinished,
+    Failed { message: Box<str> },
+}
+
+#[derive(Clone, Debug)]
+pub struct PackageInstallProgress {
+    pub package_name: Box<str>,
+    pub kind: PackageInstallProgressKind,
 }
 
 pub struct AbortCheck {
-    abort: AtomicBool,
+    abort: Arc<AtomicBool>,
 }
 
 impl AbortCheck {
-    pub(crate) fn new() -> Self {
+    pub fn new() -> Self {
         Self {
-            abort: AtomicBool::new(false),
+            abort: Arc::new(AtomicBool::new(false)),
         }
     }
 
@@ -65,8 +87,16 @@ impl AbortCheck {
         Ok(())
     }
 
-    pub(crate) fn abort(&self) {
+    pub fn abort(&self) {
         self.abort.store(true, Ordering::Relaxed);
+    }
+}
+
+impl Clone for AbortCheck {
+    fn clone(&self) -> Self {
+        Self {
+            abort: Arc::clone(&self.abort),
+        }
     }
 }
 

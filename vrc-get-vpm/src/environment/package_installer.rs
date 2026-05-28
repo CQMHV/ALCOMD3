@@ -1,7 +1,7 @@
 use crate::environment::REPO_CACHE_FOLDER;
 use crate::io::{DefaultEnvironmentIo, DefaultProjectIo, IoTrait, TokioFile};
 use crate::repository::LocalCachedRepository;
-use crate::traits::AbortCheck;
+use crate::traits::{AbortCheck, PackageInstallProgress, PackageInstallProgressKind};
 use crate::utils::Sha256AsyncWrite;
 use crate::{HttpClient, PackageInfo, PackageManifest, io};
 use futures::prelude::*;
@@ -11,20 +11,58 @@ use log::debug;
 use std::io::SeekFrom;
 use std::path::{Path, PathBuf};
 use std::pin::pin;
+use std::sync::Arc;
 use url::Url;
 
 pub struct PackageInstaller<'a, T: HttpClient> {
     pub(super) io: &'a DefaultEnvironmentIo,
     pub(super) http: Option<&'a T>,
+    progress: Option<Arc<dyn Fn(PackageInstallProgress) + Send + Sync + 'a>>,
 }
 
 impl<'a, T: HttpClient> PackageInstaller<'a, T> {
     pub fn new(io: &'a DefaultEnvironmentIo, http: Option<&'a T>) -> Self {
-        Self { io, http }
+        Self {
+            io,
+            http,
+            progress: None,
+        }
+    }
+
+    pub fn with_progress(
+        mut self,
+        progress: impl Fn(PackageInstallProgress) + Send + Sync + 'a,
+    ) -> Self {
+        self.progress = Some(Arc::new(progress));
+        self
+    }
+
+    fn emit_progress(&self, package_name: &str, kind: PackageInstallProgressKind) {
+        if let Some(callback) = &self.progress {
+            callback(PackageInstallProgress {
+                package_name: package_name.into(),
+                kind,
+            });
+        }
+    }
+
+    fn emit_failed(&self, package_name: &str, error: &io::Error) {
+        self.emit_progress(
+            package_name,
+            PackageInstallProgressKind::Failed {
+                message: error.to_string().into(),
+            },
+        );
     }
 }
 
 impl<T: HttpClient> crate::PackageInstaller for PackageInstaller<'_, T> {
+    fn report_progress(&self, progress: PackageInstallProgress) {
+        if let Some(callback) = &self.progress {
+            callback(progress);
+        }
+    }
+
     async fn install_package(
         &self,
         io: &DefaultProjectIo,
@@ -41,7 +79,15 @@ impl<T: HttpClient> crate::PackageInstaller for PackageInstaller<'_, T> {
         );
         match package.inner {
             PackageInfoInner::Remote(package, user_repo) => {
-                let zip_file = get_package(self.io, self.http, user_repo, package).await?;
+                self.emit_progress(package.name(), PackageInstallProgressKind::DownloadStarted);
+                let zip_file = match get_package(self.io, self.http, user_repo, package).await {
+                    Ok(zip_file) => zip_file,
+                    Err(e) => {
+                        self.emit_failed(package.name(), &e);
+                        return Err(e);
+                    }
+                };
+                self.emit_progress(package.name(), PackageInstallProgressKind::DownloadFinished);
 
                 // downloading may take a long time, so check abort again
                 abort.check()?;
@@ -54,7 +100,9 @@ impl<T: HttpClient> crate::PackageInstaller for PackageInstaller<'_, T> {
                     package.version()
                 );
                 // remove dest folder before extract if exists
+                self.emit_progress(package.name(), PackageInstallProgressKind::ExtractStarted);
                 if let Err(e) = crate::utils::extract_zip(zip_file, io, dest_dir).await {
+                    self.emit_failed(package.name(), &e);
                     // if an error occurs, try to remove the dest folder
                     log::debug!(
                         "Error occurred while extracting zip file for {}@{}: {e}",
@@ -69,11 +117,21 @@ impl<T: HttpClient> crate::PackageInstaller for PackageInstaller<'_, T> {
                     package.name(),
                     package.version()
                 );
+                self.emit_progress(package.name(), PackageInstallProgressKind::ExtractFinished);
 
                 Ok(())
             }
             PackageInfoInner::Local(_, path) => {
-                crate::utils::copy_recursive(self.io, path.into(), io, dest_dir.into()).await?;
+                self.emit_progress(package.name(), PackageInstallProgressKind::DownloadStarted);
+                self.emit_progress(package.name(), PackageInstallProgressKind::DownloadFinished);
+                self.emit_progress(package.name(), PackageInstallProgressKind::ExtractStarted);
+                if let Err(e) =
+                    crate::utils::copy_recursive(self.io, path.into(), io, dest_dir.into()).await
+                {
+                    self.emit_failed(package.name(), &e);
+                    return Err(e);
+                }
+                self.emit_progress(package.name(), PackageInstallProgressKind::ExtractFinished);
                 Ok(())
             }
         }

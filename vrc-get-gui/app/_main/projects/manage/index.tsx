@@ -61,7 +61,10 @@ import { combinePackagesAndProjectDetails } from "./-collect-package-row-info";
 import { PackageListCard } from "./-package-list-card";
 import { PageContextProvider } from "./-page-context";
 import { unityVersionChange } from "./-unity-migration";
-import { applyChangesMutation } from "./-use-package-change";
+import {
+	applyChangesMutation,
+	PackageApplyProgressHost,
+} from "./-use-package-change";
 
 interface SearchParams {
 	projectPath: string;
@@ -220,6 +223,7 @@ function PageBody() {
 						onRefresh={() => refetchPackages.mutate()}
 					/>
 				</main>
+				<PackageApplyProgressHost />
 			</VStack>
 		</PageContextProvider>
 	);

@@ -19,6 +19,8 @@ export const commands = {
 	environmentSetGuiAnimation: (guiAnimation: boolean) => __TAURI_INVOKE<null>("environment_set_gui_animation", { guiAnimation }),
 	environmentGuiCompact: () => __TAURI_INVOKE<boolean>("environment_gui_compact"),
 	environmentSetGuiCompact: (guiCompact: boolean) => __TAURI_INVOKE<null>("environment_set_gui_compact", { guiCompact }),
+	environmentHideSidebarLinks: () => __TAURI_INVOKE<boolean>("environment_hide_sidebar_links"),
+	environmentSetHideSidebarLinks: (hideSidebarLinks: boolean) => __TAURI_INVOKE<null>("environment_set_hide_sidebar_links", { hideSidebarLinks }),
 	environmentProjectViewMode: () => __TAURI_INVOKE<string>("environment_project_view_mode"),
 	environmentSetProjectViewMode: (projectViewMode: string) => __TAURI_INVOKE<null>("environment_set_project_view_mode", { projectViewMode }),
 	environmentSetUnityHubAccessMethod: (unityHubAccessMethod: UnityHubAccessMethod) => __TAURI_INVOKE<null>("environment_set_unity_hub_access_method", { unityHubAccessMethod }),
@@ -79,7 +81,8 @@ export const commands = {
 	projectReinstallPackages: (projectPath: string, packageIds: string[]) => __TAURI_INVOKE<TauriPendingProjectChanges>("project_reinstall_packages", { projectPath, packageIds }),
 	projectResolve: (projectPath: string) => __TAURI_INVOKE<TauriPendingProjectChanges>("project_resolve", { projectPath }),
 	projectRemovePackages: (projectPath: string, names: string[]) => __TAURI_INVOKE<TauriPendingProjectChanges>("project_remove_packages", { projectPath, names }),
-	projectApplyPendingChanges: (projectPath: string, changesVersion: number) => __TAURI_INVOKE<null>("project_apply_pending_changes", { projectPath, changesVersion }),
+	projectApplyPendingChanges: (channel: string, projectPath: string, changesVersion: number) => __TAURI_INVOKE<null>("project_apply_pending_changes", { channel, projectPath, changesVersion }),
+	projectCancelApplyPendingChanges: () => __TAURI_INVOKE<boolean>("project_cancel_apply_pending_changes"),
 	projectClearPendingChanges: () => __TAURI_INVOKE<null>("project_clear_pending_changes"),
 	projectMigrateProjectTo2022: (projectPath: string) => __TAURI_INVOKE<null>("project_migrate_project_to_2022", { projectPath }),
 	projectCallUnityForMigration: (channel: string, projectPath: string, unityPath: string) => __TAURI_INVOKE<AsyncCallResult<string, TauriCallUnityForMigrationResult>>("project_call_unity_for_migration", { channel, projectPath, unityPath }),
@@ -332,6 +335,8 @@ export type TauriProject = {
 	is_exists: boolean,
 	is_valid: boolean | null,
 };
+
+export type TauriProjectApplyProgress = { type: "DownloadStarted"; package_name: string } | { type: "DownloadFinished"; package_name: string } | { type: "ExtractStarted"; package_name: string } | { type: "ExtractFinished"; package_name: string } | { type: "RemoveStarted"; package_name: string } | { type: "RemoveFinished"; package_name: string } | { type: "InstallStarted"; package_name: string } | { type: "InstallFinished"; package_name: string } | { type: "Failed"; package_name: string; message: string };
 
 export type TauriProjectCreationInformation = {
 	templates: TauriProjectTemplateInfo[],

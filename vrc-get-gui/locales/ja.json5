@@ -50,7 +50,7 @@
 // Setup Page
     "setup:loading": "設定を読み込み中...",
     "setup:entry:welcome": "ようこそ！",
-    "setup:entry:welcome description": "ALCOMはUnityプロジェクトを管理するための<br>オープンソースなCreator Companionです。",
+    "setup:entry:welcome description": "ALCOMD3はUnityプロジェクトを管理するための<br>オープンソースなCreator Companionです。",
     "setup:next": "進む",
     "setup:back": "戻る",
 
@@ -59,40 +59,41 @@
 
     "setup:steps card:UnityHub": "Unity Hubの設定",
     "setup:unity-hub:heading": "Unity Hubのインストール",
-    "setup:unity-hub:description": "Unityをインストールしたり管理したりするために、Unity Hubをインストールする必要があります。<br>操作を行うために必要なUnityがインストールされていない場合、ALCOMはUnity Hub経由でのUnityインストールを提案します。",
+    "setup:unity-hub:description": "Unityをインストールしたり管理したりするために、Unity Hubをインストールする必要があります。<br>操作を行うために必要なUnityがインストールされていない場合、ALCOMD3はUnity Hub経由でのUnityインストールを提案します。",
     "setup:unity-hub:using this unity hub": "使用するUnity Hub",
     "setup:unity-hub:download unity hub from unity.com": "unity.comでUnity Hubをダウンロードする",
     "setup:unity-hub:unity hub link": "https://unity.com/ja/download",
     "setup:unity-hub:recheck installation": "Unity Hubの有無を再確認する",
     "setup:unity-hub:detection failed collapse": "Unity Hubがインストール済みですか？",
-    "setup:unity-hub:detection failed description": "Unity Hubの有無をもう一度確認させるには、\"Unity Hubの有無を再確認する\"ボタンを押してください。これが機能しない場合、ALCOMはUnity Hubの検出に失敗していますので、手動でUnity Hubの場所を指定してください。",
+    "setup:unity-hub:detection failed description": "Unity Hubの有無をもう一度確認させるには、\"Unity Hubの有無を再確認する\"ボタンを押してください。これが機能しない場合、ALCOMD3はUnity Hubの検出に失敗していますので、手動でUnity Hubの場所を指定してください。",
     "setup:unity-hub:not found": "Unity Hubが見つかりませんでした。",
 
     "setup:steps card:ProjectPath": "保存先の設定",
     "setup:project-path:heading": "プロジェクト作成時の保存先",
-    "setup:project-path:description": "ALCOMでプロジェクトを作成する場合、プロジェクトはこの場所に保存されます。",
+    "setup:project-path:description": "ALCOMD3でプロジェクトを作成する場合、プロジェクトはこの場所に保存されます。",
 
     "setup:steps card:Backups": "バックアップ設定",
     "setup:backups:heading": "バックアップの設定",
     "setup:backups:location": "バックアップの保存先",
-    "setup:backups:location description": "ALCOMでプロジェクトのバックアップを作成する場合、バックアップファイルはこの場所に保存されます。",
+    "setup:backups:location description": "ALCOMD3でプロジェクトのバックアップを作成する場合、バックアップファイルはこの場所に保存されます。",
     "setup:backups:archive": "バックアップの保存形式",
 
     "setup:steps card:SystemSetting": "システム設定",
     "setup:system-setting:heading": "システム設定",
-    "setup:system-setting:vcc scheme description": "<code>vcc:</code>から始まるURLは、ブラウザからVCCを起動してVPMリポジトリを追加するためのリンクです。<br>ALCOMとVCCはリポジトリ一覧を共有していますが、ALCOMを <code>vcc:</code> URLと紐付けることで、ブラウザからALCOMを起動してVPMリポジトリを追加することができるようになります。",
+    "setup:system-setting:vcc scheme description": "<code>vcc:</code>から始まるURLは、ブラウザからVCCを起動してVPMリポジトリを追加するためのリンクです。<br>ALCOMD3とVCCはリポジトリ一覧を共有していますが、ALCOMD3を <code>vcc:</code> URLと紐付けることで、ブラウザからALCOMD3を起動してVPMリポジトリを追加することができるようになります。",
     "setup:system-setting:macos bug message": "macOS向けの設定項目は特にありません。<br>(このページは表示されないはずなので、表示されている場合はバグです)",
     "setup:system-setting:hostname-with-non-ascii": "PC名(ホスト名)に非ASCII文字(半角英数字や半角記号等ではない文字)が使用されています。<br>これはUnityで問題を引き起こす場合があります。<br>半角英数字のPC名(ホスト名)に変更することを強くお勧めします。",
 
     "setup:finish:heading": "初期設定が完了しました！",
-    "setup:finish:description": "ALCOMを使うための準備がすべて終わりました！",
-    "setup:finish:next": "ALCOMを使い始める",
+    "setup:finish:description": "ALCOMD3を使うための準備がすべて終わりました！",
+    "setup:finish:next": "ALCOMD3を使い始める",
 
 
 // Side Bar
     "sidebar:bad hostname": "PC名に問題あり",
     "sidebar:dialog:bad hostname": "PC名の設定に問題があります",
     "sidebar:dialog:bad hostname description": "PC名(ホスト名)に非ASCII文字(半角英数字や半角記号等ではない文字)が使用されています。<br>これはUnityで問題を引き起こす場合があります。<br>半角英数字のPC名(ホスト名)に変更することを強くお勧めします。",
+    "sidebar:booth": "BOOTH",
     "sidebar:vrchat avatar learn": "VRChatAvatarLearn",
     "sidebar:version": "バージョン: {{version}}",
 
@@ -259,6 +260,27 @@
     "projects:manage:toast:some package has newer latest with incompatible unity": "使用中のUnityバージョンと互換性のない、新しいバージョンが公開されているパッケージがあります。",
     "projects:manage:toast:selected packages removed": "選択されたパッケージをアンイストールしました。",
     "projects:manage:toast:selected packages reinstalled": "選択されたパッケージを入れ直しました。",
+    "projects:manage:progress:title": "パッケージの変更を適用中",
+    "projects:manage:progress:description": "対象プロジェクト: {{projectPath}}",
+    "projects:manage:progress:cancel": "停止",
+    "projects:manage:progress:cancelling": "停止中...",
+    "projects:manage:progress:minimize": "最小化",
+    "projects:manage:progress:restore": "インストール進捗を表示",
+    "projects:manage:progress:retry": "再試行",
+    "projects:manage:progress:percent": "{{percent}}%",
+    "projects:manage:progress:summary": "成功: {{completed}}、失敗: {{failed}}",
+    "projects:manage:progress:status:waiting": "待機中",
+    "projects:manage:progress:status:downloading": "ダウンロード中",
+    "projects:manage:progress:status:extracting": "展開中",
+    "projects:manage:progress:status:installing": "インストール中",
+    "projects:manage:progress:status:removing": "削除中",
+    "projects:manage:progress:status:completed": "完了",
+    "projects:manage:progress:status:failed": "失敗",
+    "projects:manage:progress:completed": "パッケージの変更が完了しました",
+    "projects:manage:progress:install completed": "パッケージのインストールが完了しました",
+    "projects:manage:progress:remove completed": "パッケージのアンインストールが完了しました",
+    "projects:manage:progress:reinstall completed": "パッケージの再インストールが完了しました",
+    "projects:manage:progress:failed": "パッケージの変更に失敗しました",
 
     // Notes for translators:
     // Each "projects:manage:dialog:(downgrade|upgrade) (major|minor)"
@@ -473,7 +495,7 @@
     "settings:toast:backup path updated": "バックアップの保存先を更新しました。",
 
     "settings:backup:format": "バックアップの保存形式",
-    "settings:backup:format description": "「デフォルト」設定では、ALCOM開発チームが最も適切だと考えている保存形式が使用されます。(括弧内に詳細が表示されます)<br>圧縮率の高い保存形式ほどバックアップの作成に長い時間を要しますが、バックアップファイルの容量は小さくなります。",
+    "settings:backup:format description": "「デフォルト」設定では、ALCOMD3開発チームが最も適切だと考えている保存形式が使用されます。(括弧内に詳細が表示されます)<br>圧縮率の高い保存形式ほどバックアップの作成に長い時間を要しますが、バックアップファイルの容量は小さくなります。",
     "settings:backup:format:default": "デフォルト (低圧縮zip)",
     "settings:backup:format:zip-store": "無圧縮zip (高速)",
     "settings:backup:format:zip-fast": "低圧縮zip (低速)",
@@ -497,6 +519,8 @@
 
     "settings:gui compact": "UIをコンパクトにする",
     "settings:gui compact description": "一部のUIのテキストと余白を減らしてコンパクトな見た目にします。表示されなくなったテキストはツールチップから確認できます。",
+    "settings:hide sidebar links": "サイドバーのリンクを非表示",
+    "settings:hide sidebar links description": "サイドバーのBOOTH、VRChatAvatarLearn、バージョンボタンを非表示にします。",
 
     "settings:appearance": "UI設定",
     "settings:language": "言語設定(Language)",
@@ -549,7 +573,7 @@
     "check update:dialog:downloading...": "アップデートをダウンロード中...",
     "check update:dialog:relaunching...": "ALCOMを再起動しています...",
 
-    "settings:use alcom for vcc scheme": "ALCOMと <code>vcc:</code> URLを紐付ける",
+    "settings:use alcom for vcc scheme": "ALCOMD3と <code>vcc:</code> URLを紐付ける",
     "settings:use vcc scheme description": "<code>vcc:</code>から始まるURLは、ブラウザからVCCを起動してVPMリポジトリを追加するためのリンクです。<br>ALCOMとVCCはリポジトリ一覧を共有していますが、ALCOMを <code>vcc:</code> URLと紐付けることで、ブラウザからALCOMを起動してVPMリポジトリを追加することができるようになります。<br>この設定を有効にすると、ALCOMの起動時に紐付けが行われるようになりますが、VCCを(再)インストールしたりアップデートしたりした場合は、ALCOMを再起動するか「今すぐ紐付ける」ボタンを押してVCCによる紐付けを上書きする必要があります。",
     "settings:register vcc scheme now": "今すぐ紐付ける",
     "settings:toast:vcc scheme installed": "ALCOMと <code>vcc:</code> URLを紐付けました。",

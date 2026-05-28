@@ -73,6 +73,22 @@ Known non-blocking warnings:
 - Vite may warn that `vrc-get://localhost/global-info.js` cannot be bundled
   without `type="module"`.
 
+### Development Server
+
+To start the Tauri development app with the Vite development server:
+
+```powershell
+cd vrc-get-gui
+npm run tauri dev
+```
+
+For frontend-only development:
+
+```powershell
+cd vrc-get-gui
+npm run dev
+```
+
 ## Repository Layout
 
 - `vrc-get-gui/`: ALCOMD3 desktop GUI.
@@ -207,6 +223,22 @@ cargo xtask bundle-alcom --release --target x86_64-pc-windows-msvc --bundles set
 - Vite が `vrc-get://localhost/global-info.js` について `type="module"` なしでは
   bundle できないと警告する場合があります。
 
+### 開発サーバー
+
+Vite 開発サーバーと Tauri 開発版アプリを起動する場合:
+
+```powershell
+cd vrc-get-gui
+npm run tauri dev
+```
+
+フロントエンドのみ開発する場合:
+
+```powershell
+cd vrc-get-gui
+npm run dev
+```
+
 ## リポジトリ構成
 
 - `vrc-get-gui/`: ALCOMD3 デスクトップ GUI。
@@ -334,6 +366,22 @@ cargo xtask bundle-alcom --release --target x86_64-pc-windows-msvc --bundles set
 - Vite 可能提示 `vrc-get://localhost/global-info.js` 缺少 `type="module"` 因而無法
   bundle。
 
+### 開發伺服器
+
+啟動 Vite 開發伺服器與 Tauri 開發版應用程式：
+
+```powershell
+cd vrc-get-gui
+npm run tauri dev
+```
+
+僅進行前端開發：
+
+```powershell
+cd vrc-get-gui
+npm run dev
+```
+
 ## 儲存庫結構
 
 - `vrc-get-gui/`：ALCOMD3 桌面 GUI。
@@ -457,6 +505,22 @@ cargo xtask bundle-alcom --release --target x86_64-pc-windows-msvc --bundles set
 - `xtask/src/bundle_alcom/linux.rs` 可能出现未使用 `mode` 变量警告。
 - Vite 可能提示 `vrc-get://localhost/global-info.js` 缺少 `type="module"` 因而无法
   bundle。
+
+### 开发服务器
+
+启动 Vite 开发服务器和 Tauri 开发版应用：
+
+```powershell
+cd vrc-get-gui
+npm run tauri dev
+```
+
+仅进行前端开发：
+
+```powershell
+cd vrc-get-gui
+npm run dev
+```
 
 ## 仓库结构
 

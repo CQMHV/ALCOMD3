@@ -1,9 +1,9 @@
 import {
 	argbFromHex,
+	type DynamicColor,
 	Hct,
 	hexFromArgb,
 	MaterialDynamicColors,
-	type DynamicColor,
 	SchemeContent,
 	SchemeExpressive,
 	SchemeFidelity,
@@ -143,7 +143,9 @@ export function getStoredMaterialTheme(): MaterialThemeSettings {
 	};
 }
 
-function parseStoredMaterialTheme(value: unknown): MaterialThemeSettings | null {
+function parseStoredMaterialTheme(
+	value: unknown,
+): MaterialThemeSettings | null {
 	if (typeof value !== "string") return null;
 	if (!value.startsWith(USER_THEME_CONFIG_PREFIX)) return null;
 
@@ -224,16 +226,25 @@ export function hctFromHex(sourceHex: string) {
 
 export function hexFromHctInputs(hue: number, chroma: number, tone: number) {
 	return hexFromArgb(
-		Hct.from(clamp(hue, 0, 360), clamp(chroma, 0, 150), clamp(tone, 0, 100))
-			.toInt(),
+		Hct.from(
+			clamp(hue, 0, 360),
+			clamp(chroma, 0, 150),
+			clamp(tone, 0, 100),
+		).toInt(),
 	);
 }
 
 function kebabToCamelCase(value: string) {
-	return value.replace(/-([a-z])/g, (_, letter: string) => letter.toUpperCase());
+	return value.replace(/-([a-z])/g, (_, letter: string) =>
+		letter.toUpperCase(),
+	);
 }
 
-function getScheme(sourceHct: Hct, isDark: boolean, schemeName: ThemeSchemeName) {
+function getScheme(
+	sourceHct: Hct,
+	isDark: boolean,
+	schemeName: ThemeSchemeName,
+) {
 	switch (schemeName) {
 		case "fidelity":
 			return new SchemeFidelity(sourceHct, isDark, 0);

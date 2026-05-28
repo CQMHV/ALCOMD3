@@ -1,17 +1,21 @@
 import type { DefaultError } from "@tanstack/query-core";
 import { queryOptions, type UseMutationOptions } from "@tanstack/react-query";
-import { CircleAlert } from "lucide-react";
+import { listen } from "@tauri-apps/api/event";
+import { CheckCircle2, CircleAlert, Minimize2, RefreshCw } from "lucide-react";
 import type React from "react";
-import { Fragment } from "react";
+import { Fragment, useSyncExternalStore } from "react";
 import { DelayedButton } from "@/components/DelayedButton";
 import { ExternalLink } from "@/components/ExternalLink";
 import { Button } from "@/components/ui/button";
 import {
+	Dialog,
+	DialogContent,
 	DialogDescription,
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
+import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { assertNever } from "@/lib/assert-never";
 import type {
@@ -19,6 +23,7 @@ import type {
 	TauriPackage,
 	TauriPackageChange,
 	TauriPendingProjectChanges,
+	TauriProjectApplyProgress,
 	TauriVersion,
 } from "@/lib/bindings";
 import { commands } from "@/lib/bindings";
@@ -126,12 +131,17 @@ export async function applyChanges(
 			// close window
 			return;
 		}
-		await commands.projectApplyPendingChanges(
+		startPackageApplyProgress(
 			projectPath,
-			changes.changes_version,
+			operation,
+			changes,
+			existingPackages,
 		);
+		await applyPendingChangesWithProgress(projectPath, changes.changes_version);
+		finishPackageApplyProgress();
 		showToast(operation);
 	} catch (e) {
+		failPackageApplyProgress();
 		if (isHandleable(e) && e.body.type === "MissingDependencies") {
 			await openSingleDialog(MissingDependenciesDialog, {
 				dependencies: e.body.dependencies,
@@ -183,6 +193,26 @@ function createChanges(
 			assertNever(operation);
 	}
 }
+
+async function applyPendingChangesWithProgress(
+	projectPath: string,
+	changesVersion: number,
+) {
+	const channel = `project_apply:${Date.now()}_${Math.random().toString(36).substring(7)}`;
+	const unlisten = await listen<TauriProjectApplyProgress>(channel, (event) =>
+		updatePackageApplyProgress(event.payload),
+	);
+	try {
+		await commands.projectApplyPendingChanges(
+			channel,
+			projectPath,
+			changesVersion,
+		);
+	} finally {
+		unlisten();
+	}
+}
+
 function showToast(requested: RequestedOperation) {
 	switch (requested.type) {
 		case "install":
@@ -241,6 +271,552 @@ function showToast(requested: RequestedOperation) {
 			break;
 		default:
 			assertNever(requested);
+	}
+}
+
+type PackageApplyProgressStatus = "applying" | "completed" | "failed";
+type PackageApplyProgressKind = "install" | "remove" | "reinstall";
+
+type PackageApplyProgressItem = {
+	packageId: string;
+	displayName: string;
+	status:
+		| "waiting"
+		| "downloading"
+		| "extracting"
+		| "installing"
+		| "removing"
+		| "completed"
+		| "failed";
+	downloadFinished: boolean;
+	extractFinished: boolean;
+};
+
+type PackageApplyProgressState = {
+	status: PackageApplyProgressStatus;
+	minimized: boolean;
+	cancelRequested: boolean;
+	projectPath: string;
+	kind: PackageApplyProgressKind;
+	completedSteps: number;
+	totalSteps: number;
+	items: PackageApplyProgressItem[];
+	existingPackages?: [string, TauriBasePackageInfo][];
+	retryInstalls: [string, string][];
+	retryRemoves: string[];
+};
+
+let packageApplyProgressState: PackageApplyProgressState | null = null;
+const packageApplyProgressListeners = new Set<() => void>();
+
+function emitPackageApplyProgress() {
+	for (const listener of packageApplyProgressListeners) listener();
+}
+
+function setPackageApplyProgressState(state: PackageApplyProgressState | null) {
+	packageApplyProgressState = state;
+	emitPackageApplyProgress();
+}
+
+function subscribePackageApplyProgress(listener: () => void) {
+	packageApplyProgressListeners.add(listener);
+	return () => packageApplyProgressListeners.delete(listener);
+}
+
+function getPackageApplyProgressSnapshot() {
+	return packageApplyProgressState;
+}
+
+function startPackageApplyProgress(
+	projectPath: string,
+	operation: RequestedOperation,
+	changes: TauriPendingProjectChanges,
+	existingPackages?: [string, TauriBasePackageInfo][],
+) {
+	startPackageApplyProgressWithKind(
+		projectPath,
+		packageApplyProgressKindFromOperation(operation),
+		changes,
+		existingPackages,
+	);
+}
+
+function startPackageApplyProgressWithKind(
+	projectPath: string,
+	kind: PackageApplyProgressKind,
+	changes: TauriPendingProjectChanges,
+	existingPackages?: [string, TauriBasePackageInfo][],
+) {
+	const existingPackageMap = new Map(existingPackages ?? []);
+	const categorizedChanges = changes.package_changes
+		.filter(([_, change]) => isPackageApplyProgressTarget(kind, change))
+		.map(([pkgId, change]) =>
+			categorizeChange(pkgId, change, existingPackageMap),
+		);
+	const items = categorizedChanges.map((categorized) => {
+		return {
+			packageId: categorized.packageId,
+			displayName: categorized.displayName,
+			status: "waiting" as const,
+			downloadFinished: false,
+			extractFinished: false,
+		};
+	});
+	setPackageApplyProgressState({
+		status: "applying",
+		minimized: false,
+		cancelRequested: false,
+		projectPath,
+		kind,
+		completedSteps: 0,
+		totalSteps: items.length * 2,
+		items,
+		existingPackages,
+		retryInstalls: changes.package_changes
+			.map(([id, change]) =>
+				change.InstallNew !== undefined
+					? ([id, toVersionString(change.InstallNew.version)] as [
+							string,
+							string,
+						])
+					: undefined,
+			)
+			.filter((change) => change != null),
+		retryRemoves: changes.package_changes
+			.map(([id, change]) => ("Remove" in change ? id : undefined))
+			.filter((id) => id != null),
+	});
+}
+
+function updatePackageApplyProgress(progress: TauriProjectApplyProgress) {
+	if (packageApplyProgressState == null) return;
+	const currentState = packageApplyProgressState;
+	const items = currentState.items.map((item) => {
+		if (item.packageId !== progress.package_name) return item;
+		switch (progress.type) {
+			case "DownloadStarted":
+				if (currentState.kind === "remove") return item;
+				return { ...item, status: "downloading" as const };
+			case "DownloadFinished":
+				if (currentState.kind === "remove") return item;
+				return {
+					...item,
+					status: "extracting" as const,
+					downloadFinished: true,
+				};
+			case "ExtractStarted":
+				if (currentState.kind === "remove") return item;
+				return { ...item, status: "extracting" as const };
+			case "ExtractFinished":
+				if (currentState.kind === "remove") return item;
+				return {
+					...item,
+					extractFinished: true,
+				};
+			case "InstallStarted":
+				if (currentState.kind === "remove") return item;
+				return { ...item, status: "installing" as const };
+			case "InstallFinished":
+				if (currentState.kind === "remove") return item;
+				return {
+					...item,
+					status: "completed" as const,
+					downloadFinished: true,
+					extractFinished: true,
+				};
+			case "RemoveStarted":
+				if (currentState.kind !== "remove") return item;
+				return { ...item, status: "removing" as const };
+			case "RemoveFinished":
+				if (currentState.kind !== "remove") return item;
+				return {
+					...item,
+					status: "completed" as const,
+					downloadFinished: true,
+					extractFinished: true,
+				};
+			case "Failed":
+				return { ...item, status: "failed" as const };
+			default:
+				return assertNever(progress);
+		}
+	});
+	const completedSteps = items.reduce(
+		(total, item) =>
+			total + (item.downloadFinished ? 1 : 0) + (item.extractFinished ? 1 : 0),
+		0,
+	);
+	setPackageApplyProgressState({
+		...currentState,
+		completedSteps,
+		items,
+	});
+}
+
+function finishPackageApplyProgress() {
+	if (packageApplyProgressState == null) return;
+	setPackageApplyProgressState({
+		...packageApplyProgressState,
+		status: "completed",
+		minimized: false,
+		completedSteps: packageApplyProgressState.totalSteps,
+		items: packageApplyProgressState.items.map((item) => ({
+			...item,
+			status: "completed",
+			downloadFinished: true,
+			extractFinished: true,
+		})),
+	});
+}
+
+function failPackageApplyProgress() {
+	if (packageApplyProgressState == null) return;
+	const hasFailedPackage = packageApplyProgressState.items.some(
+		(item) => item.status === "failed",
+	);
+	setPackageApplyProgressState({
+		...packageApplyProgressState,
+		status: "failed",
+		minimized: false,
+		items: packageApplyProgressState.items.map((item) =>
+			hasFailedPackage &&
+			(item.status === "completed" || item.status === "failed")
+				? item
+				: {
+						...item,
+						status: "failed",
+					},
+		),
+	});
+}
+
+function minimizePackageApplyProgress() {
+	if (packageApplyProgressState == null) return;
+	setPackageApplyProgressState({
+		...packageApplyProgressState,
+		minimized: true,
+	});
+}
+
+function restorePackageApplyProgress() {
+	if (packageApplyProgressState == null) return;
+	setPackageApplyProgressState({
+		...packageApplyProgressState,
+		minimized: false,
+	});
+}
+
+function closePackageApplyProgress() {
+	setPackageApplyProgressState(null);
+}
+
+async function cancelPackageApplyProgress() {
+	if (packageApplyProgressState == null) return;
+	setPackageApplyProgressState({
+		...packageApplyProgressState,
+		cancelRequested: true,
+	});
+	try {
+		await commands.projectCancelApplyPendingChanges();
+	} catch (e) {
+		console.error(e);
+		toastThrownError(e);
+	}
+}
+
+async function retryPackageApplyProgress() {
+	const state = packageApplyProgressState;
+	if (state == null || state.status !== "failed") return;
+
+	const failedIds = new Set(
+		state.items
+			.filter((item) => item.status === "failed")
+			.map((item) => item.packageId),
+	);
+	if (failedIds.size === 0) return;
+
+	try {
+		const changes = await createRetryChanges(state, failedIds);
+		startPackageApplyProgressWithKind(
+			state.projectPath,
+			state.kind,
+			changes,
+			state.existingPackages,
+		);
+		await applyPendingChangesWithProgress(
+			state.projectPath,
+			changes.changes_version,
+		);
+		finishPackageApplyProgress();
+		document.dispatchEvent(new Event("post-package-changes"));
+		await queryClient.invalidateQueries({
+			queryKey: ["projectDetails", state.projectPath],
+		});
+		await queryClient.invalidateQueries({
+			queryKey: ["environmentPackages"],
+		});
+	} catch (e) {
+		failPackageApplyProgress();
+		if (isHandleable(e) && e.body.type === "MissingDependencies") {
+			await openSingleDialog(MissingDependenciesDialog, {
+				dependencies: e.body.dependencies,
+			});
+		} else {
+			console.error(e);
+			toastThrownError(e);
+		}
+	}
+}
+
+function createRetryChanges(
+	state: PackageApplyProgressState,
+	failedIds: Set<string>,
+) {
+	switch (state.kind) {
+		case "install": {
+			const installs = state.retryInstalls.filter(([id]) => failedIds.has(id));
+			return commands.projectInstallPackages(state.projectPath, installs);
+		}
+		case "remove": {
+			const removes = state.retryRemoves.filter((id) => failedIds.has(id));
+			return commands.projectRemovePackages(state.projectPath, removes);
+		}
+		case "reinstall":
+			return commands.projectReinstallPackages(state.projectPath, [
+				...failedIds,
+			]);
+		default:
+			return assertNever(state.kind);
+	}
+}
+
+export function PackageApplyProgressHost() {
+	const state = useSyncExternalStore(
+		subscribePackageApplyProgress,
+		getPackageApplyProgressSnapshot,
+	);
+
+	if (state == null) return null;
+
+	const title =
+		state.status === "completed"
+			? completedPackageApplyProgressTitle(state.kind)
+			: state.status === "failed"
+				? tc("projects:manage:progress:failed")
+				: tc("projects:manage:progress:title");
+	const completedCount = state.items.filter(
+		(item) => item.status === "completed",
+	).length;
+	const failedCount = state.items.filter(
+		(item) => item.status === "failed",
+	).length;
+
+	return (
+		<>
+			<Dialog
+				open={!state.minimized}
+				onOpenChange={(open) => {
+					if (!open && state.status === "applying") {
+						minimizePackageApplyProgress();
+					}
+				}}
+			>
+				<DialogContent className="max-w-xl">
+					<DialogHeader>
+						<DialogTitle className="flex items-center gap-2">
+							{state.status === "completed" ? (
+								<CheckCircle2 className="size-5 text-success" />
+							) : state.status === "failed" ? (
+								<CircleAlert className="size-5 text-destructive" />
+							) : (
+								<RefreshCw className="size-5 animate-spin" />
+							)}
+							{title}
+						</DialogTitle>
+						<DialogDescription>
+							{tc("projects:manage:progress:description", {
+								projectPath: state.projectPath,
+							})}
+						</DialogDescription>
+					</DialogHeader>
+					<div className="space-y-2">
+						<Progress value={state.completedSteps} max={state.totalSteps} />
+						<p className="text-center text-sm text-muted-foreground">
+							{tc("projects:manage:progress:percent", {
+								percent:
+									state.totalSteps === 0
+										? 100
+										: Math.round(
+												(state.completedSteps / state.totalSteps) * 100,
+											),
+							})}
+						</p>
+						<p className="text-center text-sm text-muted-foreground">
+							{tc("projects:manage:progress:summary", {
+								completed: completedCount,
+								failed: failedCount,
+							})}
+						</p>
+					</div>
+					<div className="overflow-hidden rounded-[1rem] bg-secondary/40">
+						<ScrollArea className="h-[40vh]">
+							<div className="p-2">
+								{state.items.map((item) => (
+									<div
+										className="flex items-center justify-between gap-3 p-2"
+										key={item.packageId}
+									>
+										<div className="min-w-0">
+											<p className="font-normal">{item.displayName}</p>
+											<p className="text-sm opacity-60">{item.packageId}</p>
+										</div>
+										<p
+											className={`shrink-0 text-sm ${packageApplyProgressStatusClass(item.status)}`}
+										>
+											{packageApplyProgressStatusLabel(item.status)}
+										</p>
+									</div>
+								))}
+							</div>
+						</ScrollArea>
+					</div>
+					<DialogFooter>
+						{state.status === "applying" ? (
+							<>
+								<Button
+									className="gap-2"
+									disabled={state.cancelRequested}
+									onClick={cancelPackageApplyProgress}
+								>
+									{state.cancelRequested
+										? tc("projects:manage:progress:cancelling")
+										: tc("projects:manage:progress:cancel")}
+								</Button>
+								<Button
+									className="gap-2"
+									onClick={minimizePackageApplyProgress}
+								>
+									<Minimize2 className="size-4" />
+									{tc("projects:manage:progress:minimize")}
+								</Button>
+							</>
+						) : (
+							<>
+								{state.status === "failed" && (
+									<Button className="gap-2" onClick={retryPackageApplyProgress}>
+										<RefreshCw className="size-4" />
+										{tc("projects:manage:progress:retry")}
+									</Button>
+								)}
+								<Button onClick={closePackageApplyProgress}>
+									{tc("general:button:close")}
+								</Button>
+							</>
+						)}
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
+			{state.minimized && (
+				<Button
+					className="fixed bottom-4 right-4 z-50 gap-2 shadow-2xl"
+					onClick={restorePackageApplyProgress}
+				>
+					<RefreshCw className="size-4 animate-spin" />
+					{tc("projects:manage:progress:restore")}
+				</Button>
+			)}
+		</>
+	);
+}
+
+function packageApplyProgressStatusLabel(
+	status: PackageApplyProgressItem["status"],
+) {
+	switch (status) {
+		case "waiting":
+			return tc("projects:manage:progress:status:waiting");
+		case "downloading":
+			return tc("projects:manage:progress:status:downloading");
+		case "extracting":
+			return tc("projects:manage:progress:status:extracting");
+		case "installing":
+			return tc("projects:manage:progress:status:installing");
+		case "removing":
+			return tc("projects:manage:progress:status:removing");
+		case "completed":
+			return tc("projects:manage:progress:status:completed");
+		case "failed":
+			return tc("projects:manage:progress:status:failed");
+		default:
+			assertNever(status);
+	}
+}
+
+function packageApplyProgressStatusClass(
+	status: PackageApplyProgressItem["status"],
+) {
+	switch (status) {
+		case "completed":
+			return "text-success";
+		case "failed":
+			return "text-destructive";
+		case "waiting":
+		case "downloading":
+		case "extracting":
+		case "installing":
+		case "removing":
+			return "text-muted-foreground";
+		default:
+			assertNever(status);
+	}
+}
+
+function packageApplyProgressKindFromOperation(
+	operation: RequestedOperation,
+): PackageApplyProgressKind {
+	switch (operation.type) {
+		case "remove":
+		case "bulkRemoved":
+			return "remove";
+		case "reinstallAll":
+		case "bulkReinstalled":
+			return "reinstall";
+		case "install":
+		case "upgradeAll":
+		case "resolve":
+		case "bulkInstalled":
+			return "install";
+		default:
+			assertNever(operation);
+	}
+}
+
+function isPackageApplyProgressTarget(
+	kind: PackageApplyProgressKind,
+	change: TauriPackageChange,
+) {
+	switch (kind) {
+		case "install":
+			return "InstallNew" in change;
+		case "remove":
+			return "Remove" in change;
+		case "reinstall":
+			return "InstallNew" in change;
+		default:
+			assertNever(kind);
+	}
+}
+
+function completedPackageApplyProgressTitle(kind: PackageApplyProgressKind) {
+	switch (kind) {
+		case "install":
+			return tc("projects:manage:progress:install completed");
+		case "remove":
+			return tc("projects:manage:progress:remove completed");
+		case "reinstall":
+			return tc("projects:manage:progress:reinstall completed");
+		default:
+			assertNever(kind);
 	}
 }
 

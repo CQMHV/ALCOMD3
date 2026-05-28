@@ -4,14 +4,12 @@ import { Palette, RotateCcw } from "lucide-react";
 import type React from "react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { DialogFooter, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
-} from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { type DialogContext, openSingleDialog } from "@/lib/dialog";
+import { tc, tt } from "@/lib/i18n";
 import {
 	applyMaterialTheme,
 	DEFAULT_THEME_MODE,
@@ -31,47 +29,48 @@ import {
 	USER_THEME_SCHEME_KEY,
 	USER_THEME_SOURCE_KEY,
 } from "@/lib/material-theme";
-import { tc, tt } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 export function MaterialThemeButton({ className }: { className?: string }) {
 	return (
-		<Popover>
-			<PopoverTrigger asChild>
-				<Button
-					variant="ghost"
-					className={cn(
-						"justify-start h-12 px-4 rounded-full text-[var(--md-sys-color-on-surface)] hover:bg-[var(--md-sys-color-surface-container-highest)] hover:text-[var(--md-sys-color-on-surface)]",
-						className,
-					)}
-				>
-					<div className="mr-4 compact:mr-0">
-						<Palette className="h-5 w-5" />
-					</div>
-					<span className="compact:hidden">{tc("settings:theme")}</span>
-				</Button>
-			</PopoverTrigger>
-			<PopoverContent
-				side="right"
-				align="end"
-				sideOffset={12}
-				className="theme-panel w-72 max-w-[calc(100vw-2rem)] border-0 p-0"
-			>
-				<ScrollArea
-					type="auto"
-					className="h-[min(680px,calc(100vh-24px))] w-full rounded-[inherit]"
-					scrollBarClassName="bg-transparent py-2.5"
-				>
-					<div className="p-4">
-						<MaterialThemePanel />
-					</div>
-				</ScrollArea>
-			</PopoverContent>
-		</Popover>
+		<Button
+			variant="ghost"
+			className={cn(
+				"justify-start h-12 px-4 rounded-full text-[var(--md-sys-color-on-surface)] hover:bg-[var(--md-sys-color-surface-container-highest)] hover:text-[var(--md-sys-color-on-surface)]",
+				className,
+			)}
+			onClick={() => void openSingleDialog(MaterialThemeDialog, {})}
+		>
+			<div className="mr-4 compact:mr-0">
+				<Palette className="h-5 w-5" />
+			</div>
+			<span className="compact:hidden">{tc("settings:theme")}</span>
+		</Button>
 	);
 }
 
-function MaterialThemePanel() {
+function MaterialThemeDialog({ dialog }: { dialog: DialogContext<void> }) {
+	return (
+		<>
+			<ScrollArea
+				type="auto"
+				className="max-h-[min(680px,calc(100dvh-12rem))] w-full"
+				scrollBarClassName="bg-transparent py-2.5"
+			>
+				<div className="pr-4">
+					<MaterialThemePanel />
+				</div>
+			</ScrollArea>
+			<DialogFooter>
+				<Button onClick={() => dialog.close()}>
+					{tc("general:button:close")}
+				</Button>
+			</DialogFooter>
+		</>
+	);
+}
+
+function MaterialThemePanel({ showTitle = true }: { showTitle?: boolean }) {
 	const initialTheme = useState(getStoredMaterialTheme)[0];
 	const [sourceHex, setSourceHex] = useState(initialTheme.sourceHex);
 	const [hexText, setHexText] = useState(initialTheme.sourceHex);
@@ -141,10 +140,15 @@ function MaterialThemePanel() {
 	return (
 		<div className="theme-panel__content">
 			<div className="theme-panel__title-row">
-				<h2 className="theme-panel__title">{tc("settings:theme")}</h2>
+				{showTitle && (
+					<DialogTitle className="theme-panel__title pb-0">
+						{tc("settings:theme")}
+					</DialogTitle>
+				)}
 				<Button
 					variant="ghost"
 					size="icon"
+					className={!showTitle ? "ml-auto" : undefined}
 					onClick={resetTheme}
 					aria-label={tt("settings:theme:reset")}
 				>
@@ -152,90 +156,96 @@ function MaterialThemePanel() {
 				</Button>
 			</div>
 
-			<div className="theme-card">
-				<Label className="theme-card__label" htmlFor="theme-color-input">
-					{tc("settings:theme:source color")}
-				</Label>
-				<div className="theme-card__color-row">
-					<input
-						id="theme-color-input"
-						type="color"
-						className="theme-card__picker"
-						value={sourceHex}
-						onChange={(event) => updateSourceHex(event.target.value)}
-					/>
-					<Input
-						className="min-w-0 flex-1"
-						value={hexText}
-						onChange={(event) => setHexText(event.target.value)}
-						onBlur={() => {
-							const normalizedHex = normalizeHexColor(hexText);
-							if (normalizedHex) {
-								updateSourceHex(normalizedHex);
-							} else {
-								setHexText(sourceHex);
-							}
-						}}
-					/>
-				</div>
-			</div>
-
-			<div className="theme-sliders">
-				<ThemeSlider
-					label={tc("settings:theme:hue")}
-					value={hct.hue}
-					min={0}
-					max={360}
-					trackClassName="theme-slider__track--hue"
-					onChange={(value) => updateHct("hue", value)}
-				/>
-				<ThemeSlider
-					label={tc("settings:theme:chroma")}
-					value={hct.chroma}
-					min={0}
-					max={150}
-					trackClassName="theme-slider__track--chroma"
-					onChange={(value) => updateHct("chroma", value)}
-				/>
-				<ThemeSlider
-					label={tc("settings:theme:tone")}
-					value={hct.tone}
-					min={0}
-					max={100}
-					trackClassName="theme-slider__track--tone"
-					onChange={(value) => updateHct("tone", value)}
-				/>
-			</div>
-
-			<div className="theme-mode-toggle">
-				<ThemeModeButton mode={mode} value="auto" onChange={setMode}>
-					{tc("settings:theme:system")}
-				</ThemeModeButton>
-				<ThemeModeButton mode={mode} value="light" onChange={setMode}>
-					{tc("settings:theme:light")}
-				</ThemeModeButton>
-				<ThemeModeButton mode={mode} value="dark" onChange={setMode}>
-					{tc("settings:theme:dark")}
-				</ThemeModeButton>
-			</div>
-
-			<div className="theme-schemes">
-				<p className="theme-schemes__title">
-					{tc("settings:theme:scheme")}
-				</p>
-				<div className="theme-schemes-list">
-					{THEME_SCHEME_NAMES.map((schemeName) => (
-						<label className="theme-scheme-option" key={schemeName}>
+			<div className="theme-panel__main">
+				<div className="theme-panel__column">
+					<div className="theme-card">
+						<Label className="theme-card__label" htmlFor="theme-color-input">
+							{tc("settings:theme:source color")}
+						</Label>
+						<div className="theme-card__color-row">
 							<input
-								type="radio"
-								name="theme-scheme"
-								value={schemeName}
-								checked={scheme === schemeName}
-								onChange={() => setScheme(schemeName)}
+								id="theme-color-input"
+								type="color"
+								className="theme-card__picker"
+								value={sourceHex}
+								onChange={(event) => updateSourceHex(event.target.value)}
 							/>
-							{tc(THEME_SCHEME_LABELS[schemeName])}
-						</label>
-					))}
+							<Input
+								className="min-w-0 flex-1"
+								value={hexText}
+								onChange={(event) => setHexText(event.target.value)}
+								onBlur={() => {
+									const normalizedHex = normalizeHexColor(hexText);
+									if (normalizedHex) {
+										updateSourceHex(normalizedHex);
+									} else {
+										setHexText(sourceHex);
+									}
+								}}
+							/>
+						</div>
+					</div>
+
+					<div className="theme-sliders">
+						<ThemeSlider
+							label={tc("settings:theme:hue")}
+							value={hct.hue}
+							min={0}
+							max={360}
+							trackClassName="theme-slider__track--hue"
+							onChange={(value) => updateHct("hue", value)}
+						/>
+						<ThemeSlider
+							label={tc("settings:theme:chroma")}
+							value={hct.chroma}
+							min={0}
+							max={150}
+							trackClassName="theme-slider__track--chroma"
+							onChange={(value) => updateHct("chroma", value)}
+						/>
+						<ThemeSlider
+							label={tc("settings:theme:tone")}
+							value={hct.tone}
+							min={0}
+							max={100}
+							trackClassName="theme-slider__track--tone"
+							onChange={(value) => updateHct("tone", value)}
+						/>
+					</div>
+				</div>
+
+				<div className="theme-panel__column theme-panel__column--options">
+					<div className="theme-mode-toggle">
+						<ThemeModeButton mode={mode} value="auto" onChange={setMode}>
+							{tc("settings:theme:system")}
+						</ThemeModeButton>
+						<ThemeModeButton mode={mode} value="light" onChange={setMode}>
+							{tc("settings:theme:light")}
+						</ThemeModeButton>
+						<ThemeModeButton mode={mode} value="dark" onChange={setMode}>
+							{tc("settings:theme:dark")}
+						</ThemeModeButton>
+					</div>
+
+					<div className="theme-schemes">
+						<p className="theme-schemes__title">
+							{tc("settings:theme:scheme")}
+						</p>
+						<div className="theme-schemes-list">
+							{THEME_SCHEME_NAMES.map((schemeName) => (
+								<label className="theme-scheme-option" key={schemeName}>
+									<input
+										type="radio"
+										name="theme-scheme"
+										value={schemeName}
+										checked={scheme === schemeName}
+										onChange={() => setScheme(schemeName)}
+									/>
+									{tc(THEME_SCHEME_LABELS[schemeName])}
+								</label>
+							))}
+						</div>
+					</div>
 				</div>
 			</div>
 		</div>

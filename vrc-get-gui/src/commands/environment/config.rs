@@ -214,6 +214,26 @@ pub async fn environment_set_gui_compact(
 
 #[tauri::command]
 #[specta::specta]
+pub async fn environment_hide_sidebar_links(
+    config: State<'_, GuiConfigState>,
+) -> Result<bool, RustError> {
+    Ok(config.get().hide_sidebar_links)
+}
+
+#[tauri::command]
+#[specta::specta]
+pub async fn environment_set_hide_sidebar_links(
+    config: State<'_, GuiConfigState>,
+    hide_sidebar_links: bool,
+) -> Result<(), RustError> {
+    let mut config = config.load_mut().await?;
+    config.hide_sidebar_links = hide_sidebar_links;
+    config.save().await?;
+    Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
 pub async fn environment_project_view_mode(
     config: State<'_, GuiConfigState>,
 ) -> Result<String, RustError> {

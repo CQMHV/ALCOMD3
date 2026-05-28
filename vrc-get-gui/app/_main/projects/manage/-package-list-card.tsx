@@ -739,6 +739,7 @@ function BulkUpdateCard({
 			{bulkUpdateMode.canInstallOrUpgrade && (
 				<ButtonDisabledIfLoading
 					onClick={() => bulkInstallOrUpgradeAll?.(false)}
+					variant={"emphasis"}
 				>
 					{tc("projects:manage:button:install selected latest")}
 				</ButtonDisabledIfLoading>
@@ -746,12 +747,16 @@ function BulkUpdateCard({
 			{bulkUpdateMode.canInstallOrUpgradeStable && (
 				<ButtonDisabledIfLoading
 					onClick={() => bulkInstallOrUpgradeAll?.(true)}
+					variant={"emphasis"}
 				>
 					{tc("projects:manage:button:install selected stable latest")}
 				</ButtonDisabledIfLoading>
 			)}
 			{bulkUpdateMode.canReinstallOrRemove && (
-				<ButtonDisabledIfLoading onClick={bulkReinstallAll}>
+				<ButtonDisabledIfLoading
+					onClick={bulkReinstallAll}
+					variant={"emphasis"}
+				>
 					{tc("projects:manage:button:reinstall selected")}
 				</ButtonDisabledIfLoading>
 			)}
@@ -763,7 +768,7 @@ function BulkUpdateCard({
 					{tc("projects:manage:button:uninstall selected")}
 				</ButtonDisabledIfLoading>
 			)}
-			<ButtonDisabledIfLoading onClick={cancel} variant={"warning"}>
+			<ButtonDisabledIfLoading onClick={cancel}>
 				{tc("projects:manage:button:clear selection")}
 				{" ("}
 				{tc("projects:manage:n packages selected", { count })}

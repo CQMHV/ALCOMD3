@@ -49,8 +49,8 @@
 
 // Setup Page
     "setup:loading": "正在加载设置...",
-    "setup:entry:welcome": "欢迎使用 ALCOM!",
-    "setup:entry:welcome description": "ALCOM 是一个专为 VRChat 以及其他 Unity 项目设计的创作者助手。",
+    "setup:entry:welcome": "欢迎使用 ALCOMD3!",
+    "setup:entry:welcome description": "ALCOMD3 是一个专为 VRChat 以及其他 Unity 项目设计的创作者助手。",
     "setup:next": "继续",
     "setup:back": "返回",
 
@@ -59,18 +59,18 @@
 
     "setup:steps card:UnityHub": "Unity Hub",
     "setup:unity-hub:heading": "安装 Unity Hub",
-    "setup:unity-hub:description": "在开始之前，您需要先安装 Untiy Hub，它可以很方便地安装和管理 Unity 版本。<br/>如果您还没有项目，ALCOM 会建议您使用 Unity Hub 安装 Unity。",
+    "setup:unity-hub:description": "在开始之前，您需要先安装 Untiy Hub，它可以很方便地安装和管理 Unity 版本。<br/>如果您还没有项目，ALCOMD3 会建议您使用 Unity Hub 安装 Unity。",
     "setup:unity-hub:using this unity hub": "Unity Hub 路径",
     "setup:unity-hub:download unity hub from unity.com": "从 unity.com 下载 Unity Hub。",
     "setup:unity-hub:unity hub link": "https://unity.com/cn/download",
     "setup:unity-hub:recheck installation": "重新检测",
     "setup:unity-hub:detection failed collapse": "您是否确定您已经安装了 Unity Hub?",
-    "setup:unity-hub:detection failed description": "请点击上面的 \"重新检测\" 按钮重新检测 Unity Hub。如果不起作用，说明 ALCOM 无法检测到您的 Unity Hub。请在下面手动设置 Unity Hub。",
+    "setup:unity-hub:detection failed description": "请点击上面的 \"重新检测\" 按钮重新检测 Unity Hub。如果不起作用，说明 ALCOMD3 无法检测到您的 Unity Hub。请在下面手动设置 Unity Hub。",
     "setup:unity-hub:not found": "没有找到 Unity Hub。",
 
     "setup:steps card:ProjectPath": "保存位置",
     "setup:project-path:heading": "项目保存位置",
-    "setup:project-path:description": "使用 ALCOM 创建项目时，项目将保存在此位置。<br/>稍后您可以在设置界面更改这个设置。",
+    "setup:project-path:description": "使用 ALCOMD3 创建项目时，项目将保存在此位置。<br/>稍后您可以在设置界面更改这个设置。",
 
     "setup:steps card:Backups": "备份设置",
     "setup:backups:heading": "项目备份设置",
@@ -80,19 +80,20 @@
 
     "setup:steps card:SystemSetting": "系统配置",
     "setup:system-setting:heading": "系统配置",
-    "setup:system-setting:vcc scheme description": "您可以使 ALCOM 代替 VCC 来处理 <code>vcc://</code> 快捷方式，以将存储库安装到您的电脑上。ALCOM 和 VCC 将共享相同的存储库列表，但使用 ALCOM 可以让您在不打开 VCC 的情况下快速安装存储库。",
+    "setup:system-setting:vcc scheme description": "您可以使 ALCOMD3 代替 VCC 来处理 <code>vcc://</code> 快捷方式，以将存储库安装到您的电脑上。ALCOMD3 和 VCC 将共享相同的存储库列表，但使用 ALCOMD3 可以让您在不打开 VCC 的情况下快速安装存储库。",
     "setup:system-setting:macos bug message": "在 macOS 上无需配置此功能。 (这个页面不应该被显示，显示此页面是一个错误)",
     "setup:system-setting:hostname-with-non-ascii": "您在设备名称中使用了非 ASCII 字符。<br/>这可能会导致 Unity 2022 出现问题。<br/>强烈建议您使用 ASCII 字符来命名设备。",
 
     "setup:finish:heading": "设置完成！",
-    "setup:finish:description": "您已成功完成设置初始化！<br/>开始使用 ALCOM 吧！",
-    "setup:finish:next": "开始使用 ALCOM",
+    "setup:finish:description": "您已成功完成设置初始化！<br/>开始使用 ALCOMD3 吧！",
+    "setup:finish:next": "开始使用 ALCOMD3",
 
 
 // Side Bar
     "sidebar:bad hostname": "异常的设备名称",
     "sidebar:dialog:bad hostname": "您的设备名称存在问题",
     "sidebar:dialog:bad hostname description": "您在设备名称中使用了非 ASCII 字符。<br/>这可能会导致版本较新的 Unity 出现问题。<br/>强烈建议您使用数字与字母组合来命名设备。",
+    "sidebar:booth": "BOOTH",
     "sidebar:vrchat avatar learn": "VRChatAvatarLearn",
     "sidebar:version": "版本：{{version}}",
 
@@ -259,6 +260,27 @@
     "projects:manage:toast:some package has newer latest with incompatible unity": "有些软件包的更新版本与 Unity 版本不兼容。",
     "projects:manage:toast:selected packages removed": "所选软件包删除成功。",
     "projects:manage:toast:selected packages reinstalled": "所选软件包重装成功。",
+    "projects:manage:progress:title": "正在应用软件包更改",
+    "projects:manage:progress:description": "目标项目：{{projectPath}}",
+    "projects:manage:progress:cancel": "终止",
+    "projects:manage:progress:cancelling": "正在终止...",
+    "projects:manage:progress:minimize": "最小化",
+    "projects:manage:progress:restore": "查看安装进度",
+    "projects:manage:progress:retry": "重试",
+    "projects:manage:progress:percent": "{{percent}}%",
+    "projects:manage:progress:summary": "成功：{{completed}} 个，失败：{{failed}} 个",
+    "projects:manage:progress:status:waiting": "等待中",
+    "projects:manage:progress:status:downloading": "下载中",
+    "projects:manage:progress:status:extracting": "解压中",
+    "projects:manage:progress:status:installing": "安装中",
+    "projects:manage:progress:status:removing": "卸载中",
+    "projects:manage:progress:status:completed": "已完成",
+    "projects:manage:progress:status:failed": "失败",
+    "projects:manage:progress:completed": "软件包更改已完成",
+    "projects:manage:progress:install completed": "软件包安装已完成",
+    "projects:manage:progress:remove completed": "软件包卸载已完成",
+    "projects:manage:progress:reinstall completed": "软件包重装已完成",
+    "projects:manage:progress:failed": "软件包更改失败",
 
     // Notes for translators:
     // Each "projects:manage:dialog:(downgrade|upgrade) (major|minor)"
@@ -470,11 +492,11 @@
     "settings:toast:default project path updated": "成功更新项目默认路径！",
 
     "settings:backup:path": "备份路径",
-    "settings:backup:path description": "备份路径是 ALCOM 用于创建项目备份压缩包的目录。",
+    "settings:backup:path description": "备份路径是 ALCOMD3 用于创建项目备份压缩包的目录。",
     "settings:toast:backup path updated": "成功更新项目备份路径！",
 
     "settings:backup:format": "备份文件的压缩格式",
-    "settings:backup:format description": "备份以压缩文件的形式保存。 <br/>您可以选择压缩文件的压缩格式。<br/>默认设置是 ALCOM 目前认为最好的格式，当前的默认行为用括号表示。<br/>高压缩率会增加备份耗时，但会节省磁盘空间。",
+    "settings:backup:format description": "备份以压缩文件的形式保存。 <br/>您可以选择压缩文件的压缩格式。<br/>默认设置是 ALCOMD3 目前认为最好的格式，当前的默认行为用括号表示。<br/>高压缩率会增加备份耗时，但会节省磁盘空间。",
     "settings:backup:format:default": "默认 (低压缩率的 zip)",
     "settings:backup:format:zip-store": "未压缩的 zip (快)",
     "settings:backup:format:zip-fast": "低压缩率的 zip (慢)",
@@ -498,6 +520,8 @@
 
     "settings:gui compact": "GUI 紧凑模式",
     "settings:gui compact description": "减小 GUI 元素中文字的大小和间距来让 GUI 显得更加紧凑。被隐藏的文字将会以提示的方式显示。",
+    "settings:hide sidebar links": "隐藏侧边栏链接",
+    "settings:hide sidebar links description": "隐藏侧边栏中的 BOOTH、VRChatAvatarLearn 和版本号按钮。",
 
     "settings:appearance": "外观",
     "settings:language": "界面语言(Language)",
@@ -550,7 +574,7 @@
     "check update:dialog:downloading...": "正在下载更新...",
     "check update:dialog:relaunching...": "正在重启 ALCOM...",
 
-    "settings:use alcom for vcc scheme": "使 ALCOM 关联 URL 快捷方式 <code>vcc://</code>",
+    "settings:use alcom for vcc scheme": "使 ALCOMD3 关联 URL 快捷方式 <code>vcc://</code>",
     "settings:use vcc scheme description": "通过 URL 快捷方式 <code>vcc://</code>，可以从浏览器启动 VCC 来添加软件包存储库。<br>作为 VCC 的替代方案，您可以使 ALCOM 成为 URL 快捷方式 <code>vcc://</code> 唤起的默认应用程序，以从浏览器快捷添加软件包存储库。<br>如果启用该功能，ALCOM 将会在每次启动时自动注册 URL 快捷方式。<code>vcc://</code><br>每当 VCC 安装/重装/更新时，您都需要重启 ALCOM 或通过手动点击设置界面的按钮来覆盖 VCC 的对 URL 快捷方式的注册。",
     "settings:register vcc scheme now": "立即注册 URL 快捷方式",
     "settings:toast:vcc scheme installed": "ALCOM 已被注册为 URL 快捷方式 <code>vcc://</code> 的默认启动程序。",

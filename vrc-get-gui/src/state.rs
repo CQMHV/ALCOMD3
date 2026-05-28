@@ -1,6 +1,7 @@
 mod changes;
 mod config;
 mod packages;
+mod project_apply;
 mod settings;
 mod templates;
 mod updater;
@@ -8,6 +9,7 @@ mod updater;
 pub use changes::*;
 pub use config::*;
 pub use packages::*;
+pub use project_apply::*;
 pub use settings::*;
 pub use templates::*;
 pub use updater::*;

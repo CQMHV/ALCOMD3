@@ -25,6 +25,11 @@ const environmentRepositoriesInfo = queryOptions({
 	queryFn: commands.environmentRepositoriesInfo,
 });
 
+const environmentPackages = queryOptions({
+	queryKey: ["environmentPackages"],
+	queryFn: commands.environmentPackages,
+});
+
 export async function openAddRepositoryDialog() {
 	using dialog = showDialog();
 	const repoInfo = await dialog.ask(EnteringRepositoryInfo, {});
@@ -75,8 +80,12 @@ async function addRepositoryImpl(
 		})
 	) {
 		await commands.environmentAddRepository(url, headers);
+		await commands.environmentRefetchPackages();
 		toastSuccess(tt("vpm repositories:toast:repository added"));
-		await queryClient.invalidateQueries(environmentRepositoriesInfo);
+		await Promise.all([
+			queryClient.invalidateQueries(environmentRepositoriesInfo),
+			queryClient.invalidateQueries(environmentPackages),
+		]);
 	}
 }
 

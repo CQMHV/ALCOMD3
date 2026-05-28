@@ -11,10 +11,13 @@ use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
 use std::process::Stdio;
 use std::str::FromStr;
-use tauri::{AppHandle, State, Window};
+use tauri::{AppHandle, Emitter, State, Window};
 use tokio::io::{AsyncBufReadExt, BufReader};
 use tokio::process::Command;
-use vrc_get_vpm::environment::{PackageInstaller, VccDatabaseConnection};
+use vrc_get_vpm::AbortCheck;
+use vrc_get_vpm::environment::{
+    PackageInstallProgressKind, PackageInstaller, VccDatabaseConnection,
+};
 use vrc_get_vpm::io::DefaultEnvironmentIo;
 use vrc_get_vpm::unity_project::pending_project_changes::{
     ConflictInfo, PackageChange, RemoveReason,
@@ -29,6 +32,39 @@ pub struct TauriProjectDetails {
     unity_revision: Option<String>,
     installed_packages: Vec<(String, TauriBasePackageInfo)>,
     should_resolve: bool,
+}
+
+#[derive(Serialize, specta::Type, Clone)]
+#[serde(tag = "type")]
+pub enum TauriProjectApplyProgress {
+    DownloadStarted {
+        package_name: String,
+    },
+    DownloadFinished {
+        package_name: String,
+    },
+    ExtractStarted {
+        package_name: String,
+    },
+    ExtractFinished {
+        package_name: String,
+    },
+    RemoveStarted {
+        package_name: String,
+    },
+    RemoveFinished {
+        package_name: String,
+    },
+    InstallStarted {
+        package_name: String,
+    },
+    InstallFinished {
+        package_name: String,
+    },
+    Failed {
+        package_name: String,
+        message: String,
+    },
 }
 
 #[tauri::command]
@@ -295,8 +331,11 @@ pub async fn project_remove_packages(
 #[specta::specta]
 pub async fn project_apply_pending_changes(
     changes: State<'_, ChangesState>,
+    project_apply: State<'_, ProjectApplyState>,
     io: State<'_, DefaultEnvironmentIo>,
     http: State<'_, reqwest::Client>,
+    window: Window,
+    channel: String,
     project_path: String,
     changes_version: u32,
 ) -> Result<(), RustError> {
@@ -306,16 +345,67 @@ pub async fn project_apply_pending_changes(
 
     let changes = changes.take_changes();
 
-    let installer = PackageInstaller::new(io.inner(), Some(http.inner()));
+    let installer =
+        PackageInstaller::new(io.inner(), Some(http.inner())).with_progress(move |progress| {
+            let package_name = progress.package_name.to_string();
+            let event = match progress.kind {
+                PackageInstallProgressKind::DownloadStarted => {
+                    TauriProjectApplyProgress::DownloadStarted { package_name }
+                }
+                PackageInstallProgressKind::DownloadFinished => {
+                    TauriProjectApplyProgress::DownloadFinished { package_name }
+                }
+                PackageInstallProgressKind::ExtractStarted => {
+                    TauriProjectApplyProgress::ExtractStarted { package_name }
+                }
+                PackageInstallProgressKind::ExtractFinished => {
+                    TauriProjectApplyProgress::ExtractFinished { package_name }
+                }
+                PackageInstallProgressKind::RemoveStarted => {
+                    TauriProjectApplyProgress::RemoveStarted { package_name }
+                }
+                PackageInstallProgressKind::RemoveFinished => {
+                    TauriProjectApplyProgress::RemoveFinished { package_name }
+                }
+                PackageInstallProgressKind::InstallStarted => {
+                    TauriProjectApplyProgress::InstallStarted { package_name }
+                }
+                PackageInstallProgressKind::InstallFinished => {
+                    TauriProjectApplyProgress::InstallFinished { package_name }
+                }
+                PackageInstallProgressKind::Failed { message } => {
+                    TauriProjectApplyProgress::Failed {
+                        package_name,
+                        message: message.to_string(),
+                    }
+                }
+            };
+            window.emit(&channel, event).ok();
+        });
 
-    let mut unity_project = load_project(project_path).await?;
+    let abort = AbortCheck::new();
+    project_apply.start(abort.clone());
+    let result = async {
+        let mut unity_project = load_project(project_path).await?;
 
-    unity_project
-        .apply_pending_changes(&installer, changes)
-        .await?;
+        unity_project
+            .apply_pending_changes_with_abort(&installer, changes, &abort)
+            .await?;
 
-    update_project_last_modified(&io, unity_project.project_dir()).await;
-    Ok(())
+        update_project_last_modified(&io, unity_project.project_dir()).await;
+        Ok(())
+    }
+    .await;
+    project_apply.finish();
+    result
+}
+
+#[tauri::command]
+#[specta::specta]
+pub async fn project_cancel_apply_pending_changes(
+    project_apply: State<'_, ProjectApplyState>,
+) -> Result<bool, RustError> {
+    Ok(project_apply.abort())
 }
 
 #[tauri::command]

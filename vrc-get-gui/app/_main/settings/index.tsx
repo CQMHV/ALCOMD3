@@ -17,6 +17,7 @@ import {
 	FilePathRow,
 	GuiAnimationSwitch,
 	GuiCompactSwitch,
+	HideSidebarLinksSwitch,
 	LanguageSelector,
 	ProjectPathWarnings,
 } from "@/components/common-setting-parts";
@@ -706,6 +707,7 @@ function AppearanceCard() {
 			<LanguageSelector />
 			<GuiAnimationSwitch />
 			<GuiCompactSwitch />
+			<HideSidebarLinksSwitch />
 		</SettingsCard>
 	);
 }

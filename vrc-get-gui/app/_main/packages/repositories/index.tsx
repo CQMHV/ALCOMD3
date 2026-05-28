@@ -7,7 +7,13 @@ import {
 	useQueryClient,
 } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { ArrowDown, ArrowUp, ChevronDown, CircleX, Package } from "lucide-react";
+import {
+	ArrowDown,
+	ArrowUp,
+	ChevronDown,
+	CircleX,
+	Package,
+} from "lucide-react";
 import { Suspense, useCallback, useEffect, useId, useMemo } from "react";
 import { HNavBar, VStack } from "@/components/layout";
 import { ScrollableCardTable } from "@/components/ScrollableCardTable";
@@ -284,9 +290,7 @@ function RepositoryTableBody({
 						url={repo.url}
 						hiddenUserRepos={hiddenUserRepos}
 						repoPackages={packagesByRepo.get(repo.id) ?? []}
-						onMoveUp={
-							index > 0 ? () => moveUserRepo(index, -1) : undefined
-						}
+						onMoveUp={index > 0 ? () => moveUserRepo(index, -1) : undefined}
 						onMoveDown={
 							index < userRepos.length - 1
 								? () => moveUserRepo(index, 1)
@@ -486,7 +490,9 @@ function RepositoryPackagesDialog({
 		<>
 			<DialogTitle>{displayName}</DialogTitle>
 			<div className={"max-h-[50vh] overflow-y-auto font-normal"}>
-				<p className={"font-normal"}>{tc("vpm repositories:dialog:packages")}</p>
+				<p className={"font-normal"}>
+					{tc("vpm repositories:dialog:packages")}
+				</p>
 				<RepositoryPackageList packages={packages} />
 			</div>
 			<DialogFooter>
