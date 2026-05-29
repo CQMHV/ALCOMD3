@@ -72,9 +72,9 @@ pub async fn check_for_update(
     {
         Url::parse(&env).unwrap()
     } else if stable {
-        Url::parse("https://vrc-get.anatawa12.com/api/gui/tauri-updater.json").unwrap()
+        Url::parse("https://alcomd3.cqmhv.com/api/gui/tauri-updater.json").unwrap()
     } else {
-        Url::parse("https://vrc-get.anatawa12.com/api/gui/tauri-updater-beta.json").unwrap()
+        Url::parse("https://alcomd3.cqmhv.com/api/gui/tauri-updater-beta.json").unwrap()
     };
     updater::check_for_update(&app_handle, endpoint).await
 }
@@ -95,13 +95,19 @@ pub async fn util_check_for_update(
     app_handle: AppHandle,
     updater_state: State<'_, UpdaterState>,
     config: State<'_, GuiConfigState>,
+    manual: bool,
 ) -> Result<Option<CheckForUpdateResponse>, RustError> {
-    let _ = (app_handle, updater_state, config);
-    return Ok(None);
-
-    #[allow(unreachable_code)]
     let stable = config.get().release_channel == "stable";
-    let Some(response) = check_for_update(app_handle, stable).await? else {
+    let response = match check_for_update(app_handle, stable).await {
+        Ok(response) => response,
+        Err(e) if !manual => {
+            log::debug!("automatic update check failed silently: {e}");
+            return Ok(None);
+        }
+        Err(e) => return Err(e.into()),
+    };
+
+    let Some(response) = response else {
         return Ok(None);
     };
     let current_version = response.current_version.clone();

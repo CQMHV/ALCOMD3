@@ -838,7 +838,7 @@ function AlcomCard() {
 
 	const checkForUpdate = async () => {
 		try {
-			const checkVersion = await commands.utilCheckForUpdate();
+			const checkVersion = await commands.utilCheckForUpdate(true);
 			if (checkVersion) {
 				await openSingleDialog(CheckForUpdateMessage, {
 					response: checkVersion,

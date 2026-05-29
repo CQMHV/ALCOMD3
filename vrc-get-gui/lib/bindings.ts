@@ -98,14 +98,14 @@ export const commands = {
 	utilOpenUrl: (url: string) => __TAURI_INVOKE<null>("util_open_url", { url }),
 	utilGetLogEntries: () => __TAURI_INVOKE<LogEntry_Serialize[]>("util_get_log_entries"),
 	utilGetVersion: () => __TAURI_INVOKE<string>("util_get_version"),
-	utilCheckForUpdate: () => __TAURI_INVOKE<{
+	utilCheckForUpdate: (manual: boolean) => __TAURI_INVOKE<{
 	version: number,
 	current_version: string,
 	latest_version: string,
 	updater_status: UpdaterStatus,
 	update_description: string | null,
 	updater_disabled_messages: { [key in string]: string } | null,
-} | null>("util_check_for_update"),
+} | null>("util_check_for_update", { manual }),
 	utilInstallAndUpgrade: (channel: string, version: number) => __TAURI_INVOKE<AsyncCallResult<InstallUpgradeProgress, null>>("util_install_and_upgrade", { channel, version }),
 	utilIsBadHostname: () => __TAURI_INVOKE<boolean>("util_is_bad_hostname"),
 	utilPickDirectory: (current: string) => __TAURI_INVOKE<TauriPickProjectDefaultPathResult>("util_pick_directory", { current }),
@@ -459,4 +459,3 @@ export type UpdaterStatus =
  *  `VRC_GET_GUI_UPDATER_UPDATE_SUGGESTION_MESSAGE` environment variable at build time.
  */
 "UpdaterDisabled";
-

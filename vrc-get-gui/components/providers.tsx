@@ -111,7 +111,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
 		(async () => {
 			try {
 				if (import.meta.env.DEV) return;
-				const checkVersion = await commands.utilCheckForUpdate();
+				const checkVersion = await commands.utilCheckForUpdate(false);
 				if (cancel) return;
 				if (checkVersion) {
 					await openSingleDialog(CheckForUpdateMessage, {
@@ -119,7 +119,6 @@ export function Providers({ children }: { children: React.ReactNode }) {
 					});
 				}
 			} catch (e) {
-				toastThrownError(e);
 				console.error(e);
 			}
 		})();

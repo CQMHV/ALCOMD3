@@ -1,8 +1,10 @@
 use crate::io;
 use crate::io::SeekFrom;
 use crate::io::{DefaultProjectIo, IoTrait};
+use crate::traits::AbortCheck;
 use crate::utils::MapResultExt;
 use async_zip::base::read::seek::ZipFileReader;
+use futures::io::{AsyncRead, AsyncWrite};
 use futures::prelude::*;
 use log::trace;
 use std::path::{Component, Path};
@@ -11,12 +13,15 @@ pub(crate) async fn extract_zip(
     mut zip_file: impl AsyncBufRead + AsyncSeek + Unpin,
     io: &DefaultProjectIo,
     dest_folder: &Path,
+    abort: &AbortCheck,
 ) -> io::Result<()> {
     // extract zip file
+    abort.check()?;
     zip_file.seek(SeekFrom::Start(0)).await?;
 
     let mut zip_reader = ZipFileReader::new(zip_file).await.err_mapped()?;
     for i in 0..zip_reader.file().entries().len() {
+        abort.check()?;
         let entry = &zip_reader.file().entries()[i];
         let Some(filename) = entry.filename().as_str().ok() else {
             return Err(io::Error::new(
@@ -41,12 +46,31 @@ pub(crate) async fn extract_zip(
             let mut reader = zip_reader.reader_without_entry(i).await.err_mapped()?;
             io.create_dir_all(path.parent().unwrap()).await?;
             let mut dest_file = io.create(path.as_ref()).await?;
-            io::copy(&mut reader, &mut dest_file).await?;
+            copy_with_abort(&mut reader, &mut dest_file, abort).await?;
             dest_file.flush().await?;
         }
     }
 
     Ok(())
+}
+
+async fn copy_with_abort(
+    reader: &mut (impl AsyncRead + Unpin),
+    writer: &mut (impl AsyncWrite + Unpin),
+    abort: &AbortCheck,
+) -> io::Result<u64> {
+    let mut copied = 0;
+    let mut buffer = [0; 64 * 1024];
+
+    loop {
+        abort.check()?;
+        let read = reader.read(&mut buffer).await?;
+        if read == 0 {
+            return Ok(copied);
+        }
+        writer.write_all(&buffer[..read]).await?;
+        copied += read as u64;
+    }
 }
 
 fn fix_path_separator(p: &str) -> std::borrow::Cow<'_, str> {

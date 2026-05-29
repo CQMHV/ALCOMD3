@@ -1,13 +1,13 @@
 # ALCOMD3
 
-[![Github Release][shields-github-version]][release-alcom]
+[![Github Release][shields-github-version]][release-alcomd3]
 [![Homebrew Version][shields-homebrew-version]][homebrew-alcom]
 [![Scoop Version][shields-scoop-version]][scoop-alcom]
 [![AUR Version][shields-aur-version]][aur-alcom]
 [![WinGet Version][shields-winget-version]][winget-alcom]
 <!-- [![MacPorts Version][shields-macports-vrc-get]][macports-vrc-get] -->
 
-[shields-github-version]: https://img.shields.io/github/v/release/vrc-get/vrc-get?filter=gui-v*
+[shields-github-version]: https://img.shields.io/github/v/release/CQMHV/ALCOMD3
 [shields-homebrew-version]: https://img.shields.io/homebrew/cask/v/alcom
 [shields-scoop-version]: https://img.shields.io/scoop/v/vrc-alcom?bucket=https%3A%2F%2Fgithub.com%2Fbabo4d%2Fscoop-xrtools
 [shields-aur-version]: https://img.shields.io/aur/version/alcom
@@ -16,7 +16,7 @@
 
 <!-- TODO: macports: https://github.com/badges/shields/issues/9588 -->
 
-[release-alcom]: https://github.com/vrc-get/vrc-get/releases?q=gui-v1
+[release-alcomd3]: https://github.com/CQMHV/ALCOMD3/releases
 [homebrew-alcom]: https://formulae.brew.sh/cask/alcom
 [scoop-alcom]: https://github.com/babo4d/scoop-xrtools/blob/master/bucket/vrc-alcom.json
 [aur-alcom]: https://aur.archlinux.org/packages/alcom
@@ -25,24 +25,25 @@
 
 [scoop-xrtools]: https://github.com/babo4d/scoop-xrtools/
 
-ALCOMD3 is a downstream fork of [ALCOM](https://vrc-get.anatawa12.com/alcom/) with a Google Material Design 3 inspired interface.
+ALCOMD3 is a downstream fork of [ALCOM / vrc-get](https://github.com/vrc-get/vrc-get) with a Google Material Design 3 inspired interface.
 It is intended as the ALCOM-MD3 style variant while keeping the upstream ALCOM/vrc-get functionality.
 
-Upstream ALCOM homepage: [https://vrc-get.anatawa12.com/alcom/](https://vrc-get.anatawa12.com/alcom/)
+ALCOMD3 release repository: [https://github.com/CQMHV/ALCOMD3](https://github.com/CQMHV/ALCOMD3)
 
-Automatic update checks are currently disabled in ALCOMD3.
-They will remain disabled until an ALCOMD3-specific update source is configured, so this fork will not update itself from the upstream ALCOM update feed.
+Automatic update checks use the ALCOMD3 update source at `https://alcomd3.cqmhv.com`.
+The update source is reserved for ALCOMD3 releases and may return no update information until the server-side configuration is completed.
 
 ## Installation
 
-The recommended way to install ALCOM is download from [Website][alcom-site].
+The recommended way to install ALCOMD3 is to download a prebuilt release from [GitHub Releases][alcomd3-releases].
 
-Or you can install ALCOM from package managers like [Homebrew][homebrew-alcom], [Scoop][scoop-xrtools], [AUR][aur-alcom], or [WinGet][winget-alcom].
+If you specifically need upstream ALCOM, use the upstream project:
+[https://github.com/vrc-get/vrc-get](https://github.com/vrc-get/vrc-get)
 
-If you want, you may download the HEAD build from [GitHub Actions][alcom-nightly]
+Package manager entries below are currently upstream-oriented (`alcom` / `vrc-alcom`) and may not match ALCOMD3 branding or update source:
+[Homebrew][homebrew-alcom], [Scoop][scoop-xrtools], [AUR][aur-alcom], [WinGet][winget-alcom].
 
-[alcom-site]: https://vrc-get.anatawa12.com/alcom/
-[alcom-nightly]: https://github.com/vrc-get/vrc-get/actions/workflows/ci-gui.yml?query=branch%3Amaster
+[alcomd3-releases]: https://github.com/CQMHV/ALCOMD3/releases
 
 ## Supported Platforms
 
@@ -123,8 +124,8 @@ cargo xtask bundle-alcom --release --target x86_64-pc-windows-msvc --bundles set
 The installer artifacts will be created at:
 
 ```text
-target/x86_64-pc-windows-msvc/release/bundle/setup/alcom-setup.exe
-target/x86_64-pc-windows-msvc/release/bundle/setup/alcom-setup.exe.zip
+target/x86_64-pc-windows-msvc/release/bundle/setup/alcomd3-{version}-setup.exe
+target/x86_64-pc-windows-msvc/release/bundle/setup/alcomd3-{version}-setup.exe.zip
 ```
 
 Do not use a plain `cargo build -p vrc-get-gui` binary for bundling a production installer.
@@ -142,4 +143,5 @@ For how to contribute localization to ALCOM (vrc-get-gui): [CONTRIBUTING.md](CON
 
 ## License
 
-ALCOM is licensed under the MIT License. See [LICENSE](../LICENSE) for more information.
+ALCOMD3 is based on ALCOM / vrc-get and is licensed under the MIT License.
+See [LICENSE](../LICENSE) for more information.

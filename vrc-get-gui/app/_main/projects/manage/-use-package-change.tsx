@@ -474,19 +474,20 @@ function failPackageApplyProgress() {
 	const hasFailedPackage = packageApplyProgressState.items.some(
 		(item) => item.status === "failed",
 	);
+	const preserveCompleted =
+		packageApplyProgressState.cancelRequested || hasFailedPackage;
 	setPackageApplyProgressState({
 		...packageApplyProgressState,
 		status: "failed",
 		minimized: false,
-		items: packageApplyProgressState.items.map((item) =>
-			hasFailedPackage &&
-			(item.status === "completed" || item.status === "failed")
-				? item
-				: {
-						...item,
-						status: "failed",
-					},
-		),
+		items: packageApplyProgressState.items.map((item) => {
+			if (item.status === "failed") return item;
+			if (preserveCompleted && item.status === "completed") return item;
+			return {
+				...item,
+				status: "failed",
+			};
+		}),
 	});
 }
 

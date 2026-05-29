@@ -4,6 +4,7 @@ use crate::repository::LocalCachedRepository;
 use crate::traits::{AbortCheck, PackageInstallProgress, PackageInstallProgressKind};
 use crate::utils::Sha256AsyncWrite;
 use crate::{HttpClient, PackageInfo, PackageManifest, io};
+use futures::io::{AsyncRead, AsyncWrite};
 use futures::prelude::*;
 use hex::FromHex;
 use indexmap::IndexMap;
@@ -80,13 +81,14 @@ impl<T: HttpClient> crate::PackageInstaller for PackageInstaller<'_, T> {
         match package.inner {
             PackageInfoInner::Remote(package, user_repo) => {
                 self.emit_progress(package.name(), PackageInstallProgressKind::DownloadStarted);
-                let zip_file = match get_package(self.io, self.http, user_repo, package).await {
-                    Ok(zip_file) => zip_file,
-                    Err(e) => {
-                        self.emit_failed(package.name(), &e);
-                        return Err(e);
-                    }
-                };
+                let zip_file =
+                    match get_package(self.io, self.http, user_repo, package, abort).await {
+                        Ok(zip_file) => zip_file,
+                        Err(e) => {
+                            self.emit_failed(package.name(), &e);
+                            return Err(e);
+                        }
+                    };
                 self.emit_progress(package.name(), PackageInstallProgressKind::DownloadFinished);
 
                 // downloading may take a long time, so check abort again
@@ -101,7 +103,7 @@ impl<T: HttpClient> crate::PackageInstaller for PackageInstaller<'_, T> {
                 );
                 // remove dest folder before extract if exists
                 self.emit_progress(package.name(), PackageInstallProgressKind::ExtractStarted);
-                if let Err(e) = crate::utils::extract_zip(zip_file, io, dest_dir).await {
+                if let Err(e) = crate::utils::extract_zip(zip_file, io, dest_dir, abort).await {
                     self.emit_failed(package.name(), &e);
                     // if an error occurs, try to remove the dest folder
                     log::debug!(
@@ -143,7 +145,9 @@ async fn get_package<T: HttpClient>(
     http: Option<&T>,
     repository: &LocalCachedRepository,
     package: &PackageManifest,
+    abort: &AbortCheck,
 ) -> io::Result<TokioFile> {
+    abort.check()?;
     let zip_file_name = format!("vrc-get-{}-{}.zip", &package.name(), package.version());
     let zip_path = PathBuf::from(format!(
         "{REPO_CACHE_FOLDER}/{}/{}",
@@ -153,7 +157,7 @@ async fn get_package<T: HttpClient>(
     let sha_path = zip_path.with_extension("zip.sha256");
 
     if let Some(cache_file) =
-        try_load_package_cache(io, &zip_path, &sha_path, package.zip_sha_256()).await
+        try_load_package_cache(io, &zip_path, &sha_path, package.zip_sha_256(), abort).await
     {
         debug!("using cache for {}@{}", package.name(), package.version());
         Ok(cache_file)
@@ -186,6 +190,7 @@ async fn get_package<T: HttpClient>(
                     "URL field of the package.json in the repository empty",
                 )
             })?,
+            abort,
         )
         .await?;
 
@@ -224,7 +229,9 @@ async fn try_load_package_cache(
     zip_path: &Path,
     sha_path: &Path,
     sha256: Option<&str>,
+    abort: &AbortCheck,
 ) -> Option<TokioFile> {
+    abort.check().ok()?;
     let mut cache_file = io.open(zip_path).await.ok()?;
 
     let mut buf = [0u8; 256 / 4];
@@ -246,7 +253,9 @@ async fn try_load_package_cache(
 
     let mut hasher = Sha256AsyncWrite::new(io::sink());
 
-    io::copy(&mut cache_file, &mut hasher).await.ok()?;
+    copy_with_abort(&mut cache_file, &mut hasher, abort)
+        .await
+        .ok()?;
 
     let hash = &hasher.finalize().1[..];
     if hash != &hex[..] {
@@ -277,7 +286,9 @@ async fn download_package_zip(
     sha_path: &Path,
     zip_file_name: &str,
     url: &Url,
+    abort: &AbortCheck,
 ) -> io::Result<(TokioFile, [u8; 256 / 8])> {
+    abort.check()?;
     let Some(http) = http else {
         return Err(io::Error::new(io::ErrorKind::NotFound, "Offline mode"));
     };
@@ -289,7 +300,7 @@ async fn download_package_zip(
     let mut response = pin!(http.get(url, headers).await?);
 
     let mut writer = Sha256AsyncWrite::new(cache_file);
-    io::copy(&mut response, &mut writer).await?;
+    copy_with_abort(&mut response, &mut writer, abort).await?;
     debug!("finished downloading {url}");
 
     let (mut cache_file, hash) = writer.finalize();
@@ -306,4 +317,23 @@ async fn download_package_zip(
     .await?;
 
     Ok((cache_file, hash))
+}
+
+async fn copy_with_abort(
+    reader: &mut (impl AsyncRead + Unpin),
+    writer: &mut (impl AsyncWrite + Unpin),
+    abort: &AbortCheck,
+) -> io::Result<u64> {
+    let mut copied = 0;
+    let mut buffer = [0; 64 * 1024];
+
+    loop {
+        abort.check()?;
+        let read = reader.read(&mut buffer).await?;
+        if read == 0 {
+            return Ok(copied);
+        }
+        writer.write_all(&buffer[..read]).await?;
+        copied += read as u64;
+    }
 }
