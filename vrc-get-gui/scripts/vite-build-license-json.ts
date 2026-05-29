@@ -151,7 +151,7 @@ async function buildLicenseJson(rootDir: string): Promise<string> {
 	// The logo
 	addPackageToLicenses({
 		name: "ALCOMD3 Icon, derived from ALCOM Icon",
-		version: "1.1.6-MD3.1",
+		version: "1.1.6-MD3.2",
 		url: "https://github.com/vrc-get/vrc-get",
 		licenseId: "CC-BY-4.0",
 		licenseText: await readFile("icon-LICENSE", "utf-8"),

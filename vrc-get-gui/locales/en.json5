@@ -567,8 +567,13 @@
     "settings:receive beta updates": "Receive Beta Updates",
     "settings:beta updates description": "Beta channel will receive frequent updates with futures and bugfixes. However, it may have more bugs than the stable channel relates to the new features.",
     "check update:toast:no updates": "No updates available.",
+    "check update:toast:failed to load latest release": "Failed to check for updates.",
 
     "check update:dialog:title": "ALCOM Updates",
+    "check update:dialog:no updates title": "No Updates Available",
+    "check update:dialog:no updates description": "ALCOMD3 is already up to date.",
+    "check update:dialog:failed title": "Update Check Failed",
+    "check update:dialog:failed description": "ALCOMD3 could not load update information from the update source. Check the log for the server response or network error.",
     "check update:dialog:new version description": "A new version of ALCOM is available.",
     // note: we may remove x86_64 macos later. This is preparation for this removal
     "check update:dialog:new version no platform description": "A new version of ALCOM is available, but your platform is no longer supported.<br>If your system supports another platform build, please download it instead.",

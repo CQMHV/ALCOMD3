@@ -565,8 +565,13 @@
     "settings:receive beta updates": "Beta Updates erhalten",
     "settings:beta updates description": "Erhalte früher Updates mit neuen Funktionen und Fehlerbehebungen. Die Wahrscheinlichkeit auf unfertige Funktionen zu stoßen ist höher.",
     "check update:toast:no updates": "Keine Updates verfügbar.",
+    "check update:toast:failed to load latest release": "Suche nach Updates fehlgeschlagen.",
 
     "check update:dialog:title": "ALCOM Updates",
+    "check update:dialog:no updates title": "Keine Updates verfügbar",
+    "check update:dialog:no updates description": "ALCOMD3 ist bereits auf dem neuesten Stand.",
+    "check update:dialog:failed title": "Suche nach Updates fehlgeschlagen",
+    "check update:dialog:failed description": "ALCOMD3 konnte keine Update-Informationen von der Update-Quelle laden. Prüfe das Log für die Serverantwort oder den Netzwerkfehler.",
     "check update:dialog:new version description": "Eine neue ALCOM Version ist verfügbar.",
     // note: we may remove x86_64 macos later. This is preparation for this removal
     "check update:dialog:new version no platform description": "Eine neue Version von ALCOM ist verfügbar, wird von deinem Systemarchitektur aber nicht mehr unterstützt.<br>\nSollte dein System eine andere Architektur unterstützen, lade diese herunter.",

@@ -559,8 +559,13 @@
     "settings:receive beta updates": "接收 Beta 更新",
     "settings:beta updates description": "Beta 頻道會經常收到新功能和錯誤修復的更新。但若與穩定版相比，beta 可能會有更多與新功能相關的錯誤。",
     "check update:toast:no updates": "無可用更新。",
+    "check update:toast:failed to load latest release": "檢查更新失敗。",
 
     "check update:dialog:title": "ALCOM 更新",
+    "check update:dialog:no updates title": "已是最新版本",
+    "check update:dialog:no updates description": "ALCOMD3 目前已是最新版本。",
+    "check update:dialog:failed title": "檢查更新失敗",
+    "check update:dialog:failed description": "ALCOMD3 無法從更新來源載入更新資訊。請查看日誌中的伺服器回應或網路錯誤。",
     "check update:dialog:new version description": "有可用的新版 ALCOM",
     "check update:dialog:current version": "目前版本：",
     "check update:dialog:latest version": "最新版本：",

@@ -555,8 +555,13 @@
     "settings:receive beta updates": "베타 업데이트 받기",
     "settings:beta updates description": "베타 채널은 새로운 기능과 버그 수정을 포함한 업데이트를 먼저 받을 수 있지만, 안정 채널에 비해 새로운 기능과 관련된 버그가 더 많을 수 있습니다.",
     "check update:toast:no updates": "새 업데이트가 없습니다.",
+    "check update:toast:failed to load latest release": "업데이트 확인에 실패했습니다.",
 
     "check update:dialog:title": "ALCOM 업데이트",
+    "check update:dialog:no updates title": "새 업데이트 없음",
+    "check update:dialog:no updates description": "ALCOMD3가 이미 최신 버전입니다.",
+    "check update:dialog:failed title": "업데이트 확인 실패",
+    "check update:dialog:failed description": "ALCOMD3가 업데이트 소스에서 업데이트 정보를 불러오지 못했습니다. 서버 응답 또는 네트워크 오류는 로그를 확인해 주세요.",
     "check update:dialog:new version description": "ALCOM의 최신 버전을 사용할 수 있습니다.",
     "check update:dialog:new version no platform description": "ALCOM의 최신 버전을 사용할 수 있지만, 현재 사용중인 플랫폼은 더 이상 지원되지 않습니다.<br>시스템이 다른 플랫폼 빌드를 지원하는 경우 해당 빌드를 다운로드해 주세요.",
     "check update:dialog:new version not updatable description": "ALCOM의 최신 버전을 사용할 수 있습니다.<br>그러나 현재 설치 방식에서는 자동 업데이트가 지원되지 않습니다.<br>수동으로 새 버전을 설치해 주세요.",

@@ -20,7 +20,7 @@
 
 #define MyAppName "ALCOMD3"
 #define MyAppPublisher "CQMHV"
-#define MyAppVersionInfoVersion "1.1.6.1"
+#define MyAppVersionInfoVersion "1.1.6.2"
 #define MyAppURL "https://vrc-get.anatawa12.com/alcom/"
 #define MyAppExeName "ALCOM.exe"
 #define MyAppAssocName "ALCOMD3 Template"

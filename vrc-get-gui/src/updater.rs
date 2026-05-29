@@ -286,7 +286,7 @@ pub async fn check_for_update<R: Runtime>(
     let client = app.state::<reqwest::Client>();
 
     let response = client.get(url).headers(headers).send().await.map_err(|e| {
-        log::error!("failed to check for updates: {e}");
+        log::error!(gui_toast = false; "failed to check for updates: {e}");
         Error::Reqwest(e)
     })?;
 
@@ -297,7 +297,7 @@ pub async fn check_for_update<R: Runtime>(
 
     if !response.status().is_success() {
         let status = response.status();
-        log::error!("update endpoint returned {status}");
+        log::error!(gui_toast = false; "update endpoint returned {status}");
         return Err(Error::Network(format!(
             "update endpoint returned status {status}"
         )));

@@ -417,9 +417,8 @@ impl From<crate::compressor::CompressError> for RustError {
 }
 
 impl From<crate::updater::Error> for RustError {
-    fn from(value: crate::updater::Error) -> Self {
-        log::error!(gui_toast = false; "updater error: {value}");
-        Self::unrecoverable_str("failed to load the latest release")
+    fn from(_value: crate::updater::Error) -> Self {
+        localizable_error!("check update:toast:failed to load latest release")
     }
 }
 

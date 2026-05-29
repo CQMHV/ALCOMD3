@@ -557,8 +557,13 @@
     "settings:receive beta updates": "接收 Beta 更新",
     "settings:beta updates description": "Beta 频道会定期更新新功能和错误修复。不过，与稳定版相比，Beta 版可能会出现更多与新功能相关的错误。",
     "check update:toast:no updates": "已是最新版本。",
+    "check update:toast:failed to load latest release": "检查更新失败。",
 
     "check update:dialog:title": "ALCOM 更新",
+    "check update:dialog:no updates title": "已是最新版本",
+    "check update:dialog:no updates description": "ALCOMD3 当前已经是最新版本。",
+    "check update:dialog:failed title": "检查更新失败",
+    "check update:dialog:failed description": "ALCOMD3 无法从更新源加载更新信息。请查看日志中的服务器响应或网络错误。",
     "check update:dialog:new version description": "ALCOM 有更新可用。",
 // note: we may remove x86_64 macos later. This is preparation for this removal
     "check update:dialog:new version no platform description": "ALCOM 有更新可用，但是您使用的平台已经不受支持。<br>\n如果您的系统支持其他平台的构建，请下载对应平台的构建作为替代。",

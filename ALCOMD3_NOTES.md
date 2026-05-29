@@ -59,10 +59,70 @@ ALCOMD3 includes Material Design 3-style UI changes and a custom Material Theme
 setting. Preserve the user-facing ability to customize the application theme
 color.
 
+Additional downstream UI details to preserve:
+
+- The Material Theme entry is shown in the side navigation.
+- The side navigation includes optional BOOTH, VRChatAvatarLearn, and version
+  buttons. These can be hidden with the `hide_sidebar_links` setting.
+- The version button displays `version: v{actual_version}` and copies
+  `v{actual_version}`.
+- Toasts use rounded MD3 styling, MD3 semantic progress colors, and the app
+  base background color rather than the side navigation color.
+- The log page auto-scroll button keeps a transparent border when inactive to
+  avoid layout jitter.
+- Important project/package actions use ALCOMD3 emphasis button styling.
+- The setup flow and settings copy should use `ALCOMD3` in user-facing text.
+
 Important files include frontend components and settings pages under:
 
 - `vrc-get-gui/app`
 - `vrc-get-gui/components`
+- `vrc-get-gui/app/globals.css`
+- `vrc-get-gui/lib/material-theme.ts`
+- `vrc-get-gui/locales/*.json5`
+- `vrc-get-gui/src/commands/environment/config.rs`
+- `vrc-get-gui/src/config.rs`
+
+## Package operation progress
+
+ALCOMD3 adds downstream package operation progress and cancellation behavior
+over upstream ALCOM. Preserve this when syncing package management code.
+
+User-facing behavior:
+
+- Installing, removing, and reinstalling packages show a progress dialog.
+- The dialog shows per-package status, overall progress, and success/failure
+  counts.
+- Failed packages can be retried.
+- Long-running operations can be terminated by the user.
+- Closing the main window during an operation requests termination instead of
+  immediately closing the app.
+- Termination should not turn already successful packages into failed items.
+- Parallel package work should continue where possible; one package failure
+  should not unnecessarily stop unrelated packages.
+
+Backend behavior to preserve:
+
+- `AbortCheck` is shared between frontend cancellation, window-close
+  interception, package download, package extraction, and package apply steps.
+- Download/cache verification and zip extraction check cancellation between
+  copy chunks.
+- Package install/remove/reinstall progress is reported through
+  `TauriProjectApplyProgress`.
+- Partial package failures are collected and reported while successful packages
+  can still finish.
+
+Important files:
+
+- `vrc-get-gui/app/_main/projects/manage/-use-package-change.tsx`
+- `vrc-get-gui/app/_main/projects/manage/-package-list-card.tsx`
+- `vrc-get-gui/src/commands/project.rs`
+- `vrc-get-gui/src/commands/start.rs`
+- `vrc-get-gui/src/state/project_apply.rs`
+- `vrc-get-vpm/src/traits.rs`
+- `vrc-get-vpm/src/environment/package_installer.rs`
+- `vrc-get-vpm/src/unity_project/pending_project_changes.rs`
+- `vrc-get-vpm/src/utils/extract_zip.rs`
 
 ## Repository management additions
 
@@ -78,6 +138,33 @@ Important areas:
 
 - `vrc-get-gui/app/_main/packages/repositories`
 - `vrc-get-gui/components/ReorderableList.tsx`
+
+## Updater
+
+ALCOMD3 uses its own update source instead of the upstream ALCOM update feed.
+
+Preserve these downstream behaviors:
+
+- Stable update endpoint:
+  `https://alcomd3.cqmhv.com/api/gui/tauri-updater.json`.
+- Beta update endpoint:
+  `https://alcomd3.cqmhv.com/api/gui/tauri-updater-beta.json`.
+- Automatic update check failures should be silent for users.
+- Manual update checks should show dialogs for both no-update and failed-update
+  results.
+- Real server/network failures should remain in logs, but the derived
+  "update check failed" user-facing conclusion should not be added as another
+  log entry.
+- Release versions use semver strings such as `1.1.6-MD3.2`; this compares
+  greater than `1.1.6-MD3.1`.
+
+Important files:
+
+- `vrc-get-gui/src/commands/util.rs`
+- `vrc-get-gui/src/updater.rs`
+- `vrc-get-gui/app/_main/settings/index.tsx`
+- `vrc-get-gui/components/providers.tsx`
+- `vrc-get-gui/locales/*.json5`
 
 ## Licenses and third-party notices
 
@@ -141,7 +228,9 @@ unless a new workflow is explicitly being adopted.
 
 The current release note draft is:
 
-- `RELEASE_NOTES_ALCOMD3_1.1.6-MD3.1.md`
+- `release-notes/ALCOMD3_1.1.6-MD3.2.md`
+
+Previous downstream release notes are also kept under `release-notes/`.
 
 Keep future release notes focused on downstream differences from upstream ALCOM,
 not every upstream fix.

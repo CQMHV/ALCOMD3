@@ -556,8 +556,13 @@
     "settings:receive beta updates": "ベータ版のアップデート通知を受け取る",
     "settings:beta updates description": "ベータ版は安定版より頻繁にアップデートされます。新機能を早くから使えますが、バグに遭遇しやすくなります。",
     "check update:toast:no updates": "既に最新バージョンです！",
+    "check update:toast:failed to load latest release": "アップデートの確認に失敗しました。",
 
     "check update:dialog:title": "ALCOMのアップデート",
+    "check update:dialog:no updates title": "最新バージョンです",
+    "check update:dialog:no updates description": "ALCOMD3 は既に最新バージョンです。",
+    "check update:dialog:failed title": "アップデートの確認に失敗しました",
+    "check update:dialog:failed description": "ALCOMD3 は更新元から更新情報を読み込めませんでした。サーバー応答またはネットワークエラーはログを確認してください。",
     "check update:dialog:new version description": "新しいバージョンのALCOMが使用できます！",
     // note: we may remove x86_64 macos later. This is preparation for this removal
     "check update:dialog:new version no platform description": "新しいバージョンのALCOMが公開されていますが、ご利用のプラットフォーム向けのビルドが提供されていません。<br>他のプラットフォーム向けのビルドが使用できる場合は、そちらをご利用ください。",

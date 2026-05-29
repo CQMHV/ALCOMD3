@@ -44,12 +44,7 @@ import { commands } from "@/lib/bindings";
 import { type DialogContext, openSingleDialog } from "@/lib/dialog";
 import globalInfo, { useGlobalInfo } from "@/lib/global-info";
 import { tc, tt } from "@/lib/i18n";
-import {
-	toastError,
-	toastNormal,
-	toastSuccess,
-	toastThrownError,
-} from "@/lib/toast";
+import { toastError, toastSuccess, toastThrownError } from "@/lib/toast";
 import { useEffectEvent } from "@/lib/use-effect-event";
 import { cn } from "@/lib/utils";
 
@@ -844,10 +839,10 @@ function AlcomCard() {
 					response: checkVersion,
 				});
 			} else {
-				toastNormal(tc("check update:toast:no updates"));
+				await openSingleDialog(CheckForUpdateNoUpdatesDialog, {});
 			}
 		} catch (e) {
-			toastThrownError(e);
+			await openSingleDialog(CheckForUpdateFailedDialog, {});
 			console.error(e);
 		}
 	};
@@ -936,6 +931,46 @@ function AlcomCard() {
 				)}
 			</p>
 		</SettingsCard>
+	);
+}
+
+function CheckForUpdateNoUpdatesDialog({
+	dialog,
+}: {
+	dialog: DialogContext<void>;
+}) {
+	return (
+		<>
+			<DialogTitle>{tc("check update:dialog:no updates title")}</DialogTitle>
+			<p className="whitespace-normal">
+				{tc("check update:dialog:no updates description")}
+			</p>
+			<DialogFooter>
+				<Button onClick={() => dialog.close()}>
+					{tc("general:button:close")}
+				</Button>
+			</DialogFooter>
+		</>
+	);
+}
+
+function CheckForUpdateFailedDialog({
+	dialog,
+}: {
+	dialog: DialogContext<void>;
+}) {
+	return (
+		<>
+			<DialogTitle>{tc("check update:dialog:failed title")}</DialogTitle>
+			<p className="whitespace-normal">
+				{tc("check update:dialog:failed description")}
+			</p>
+			<DialogFooter>
+				<Button onClick={() => dialog.close()}>
+					{tc("general:button:close")}
+				</Button>
+			</DialogFooter>
+		</>
 	);
 }
 
